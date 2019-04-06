@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+ web_dev:
+
+  build: .
+  ports:
+   - "4000:4000"
+  volumes:
+   - .:/app
+  environment:
+   - ENV=development
+   - PORT=4000
+   - DB=mongodb://mongodb:27017/todoDev
+  # Database: To be added
+  # Zookeeper: To be added
+
+
+networks:
+ default:
+  name: web_dev
