@@ -1,0 +1,37 @@
+version: '3.5'
+services:
+ 
+ web_service:
+  build: web_service/
+  ports:
+   - "4000:4000"
+  volumes:
+   - ./web_service:/app
+  environment:
+   - ENV=development
+   - PORT=4000
+   - DB=mongodb://mongodb:27017/todoDev
+   - ZK=localhost:2181
+ 
+ mongodb:
+  image: mongo:latest
+  container_name: "mongodb"
+  environment:
+   - MONGO_DATA_DIR=/usr/data/db
+   - MONGO_LOG_DIR=/dev/null
+  volumes:
+   - ./data/db:/usr/data/db
+  ports:
+   - 27017:27017
+  command: mongod --smallfiles --logpath=/dev/null # --quiet
+ 
+ zk:
+    build: zk_service
+    image: zookeeper:latest
+    restart: always
+    hostname: zk
+    ports:
+      - 2181:2181
+networks:
+ default:
+  name: web_dev
