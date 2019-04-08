@@ -1,6 +1,7 @@
 version: '3.5'
 services:
  
+
  web_service:
   build: web_service/
   ports:
@@ -10,9 +11,45 @@ services:
   environment:
    - ENV=development
    - PORT=4000
-   - DB=mongodb://mongodb:27017/todoDev
+   - DB=mongodb://mongodb:27017/testing
+   - ZK=localhost:4010
+
+ app_logic_service:
+  build: app_logic_service/
+  ports:
+   - "4010:4010"
+  volumes:
+   - ./app_logic_service:/app
+  environment:
+   - ENV=development
+   - PORT=4010
+   - DB=mongodb://mongodb:27017/testing
    - ZK=localhost:2181
- 
+
+ auth_service:
+  build: auth_service/
+  ports:
+   - "4020:4020"
+  volumes:
+   - ./auth_service:/app
+  environment:
+   - ENV=development
+   - PORT=4020
+   - DB=mongodb://mongodb:27017/testing
+   - ZK=localhost:2181
+
+ storage_service:
+  build: storage_service/
+  ports:
+   - "4030:4030"
+  volumes:
+   - ./auth_service:/app
+  environment:
+   - ENV=development
+   - PORT=4030
+   - DB=mongodb://mongodb:27017/testing
+   - ZK=localhost:2181
+
  mongodb:
   image: mongo:latest
   container_name: "mongodb"
@@ -22,7 +59,7 @@ services:
   volumes:
    - ./data/db:/usr/data/db
   ports:
-   - 27017:27017
+   - 4009:27017
   command: mongod --smallfiles --logpath=/dev/null # --quiet
  
  zk:
@@ -31,7 +68,7 @@ services:
     restart: always
     hostname: zk
     ports:
-      - 2181:2181
+      - 4040:2181
 networks:
  default:
   name: web_dev
