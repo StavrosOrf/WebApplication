@@ -1,0 +1,89 @@
+openapi: 3.0.0
+info:
+  description: This is the swagger file that goes with our server code
+  version: 1.0.0
+  title: Swagger ReST Article
+
+paths:
+ 
+  /login:
+    post:
+      operationId: index.login
+      tags:
+        - User
+      summary: Login User
+      description: Attempt login by querying reg. users db for credentials 
+        If success -> Get JWT and authenticate, (rval>=200) 
+        If fail -> Login failure (rval>=400)
+      requestBody:
+        $ref: "#/components/requestBodies/login"
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                  email:
+                    type: string
+  /register:
+    post:
+      operationId: index.register
+      tags:
+        - User
+      summary: Register User
+      description: Attempt register by querying reg. users db for credentials
+        If exists(user) -> Register User Fails (rval>=400), 
+        If not exist -> Insert data into reg. users db (rval>=200)
+      requestBody:
+        $ref: "#/components/requestBodies/register"
+      responses:
+        "200":
+          description: Successfully registered user
+  
+
+servers:
+  - url: /api
+components:
+  requestBodies:
+    login:
+      description: Login credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+      required: true
+    
+    register:
+      description: Register credentials
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+      required: true
+  
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      

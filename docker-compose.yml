@@ -12,7 +12,7 @@ services:
    - ENV=development
    - PORT=4000
    - DB=mongodb://mongodb:27017/testing
-   - ZK=localhost:4010
+   - ZK=localhost:2181
 
  app_logic_service:
   build: app_logic_service/
