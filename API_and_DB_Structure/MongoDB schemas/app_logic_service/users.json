@@ -1,0 +1,44 @@
+{
+  "name": "string",
+  "email": "string",
+  
+  "friends": [
+    {
+      "name": "string",
+      "email": "string"
+    }
+  ],
+  
+  "galleries": [
+    {
+      "name": "local_unique_string",
+      "images": [
+        {
+          "img_name": "local_unique_string",
+		  "storage_services": [
+				{
+					"URI": "string"
+				}
+		  ],
+		  "access_token": "string",
+          "comments": [
+            {
+              "commend_id": "jhk3245234",
+              "user": "bob_55",
+              "comment": "string (<= 1024 chars)"
+            }
+          ]
+        }
+      ],
+	  
+      "comments": [
+        {
+          "commend_id": "jsdfer9",
+          "user": "john_734",
+          "comment": "string (<= 1024 chars)"
+        }
+      ]
+    }
+  ]
+
+}

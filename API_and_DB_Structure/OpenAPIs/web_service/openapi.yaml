@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  description: This is the swagger file that goes with our server code
+  version: 1.0.0
+  title: Swagger ReST Article
+
+paths:
+  /:
+    get:
+      operationId: index.get_home_page
+      tags:
+        - Home
+      summary: Return home page
+      description: Return home or login page html
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+                  
+  /register:
+    get:
+      operationId: index.get_register_page
+      tags:
+        - Register
+      summary: Return register page
+      description: Return register page html
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+                  
+  /login:
+    get:
+      operationId: index.get_login_page
+      tags:
+        - Login
+      summary: Return login page
+      description: Return login page html
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+                  
+  /profile:
+    get:
+      operationId: index.get_profile_page
+      tags:
+        - Profile
+      summary: Return profile page
+      description: Return profile page html
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+                  
+  /friends:
+    get:
+      operationId: index.get_friends_page
+      tags:
+        - Friends
+      summary: Return friends page
+      description: Return friends page html
+      security:
+        - jwt:
+            []
+      responses:
+        "200":
+          description: OK
+          content:
+              text/html:
+                schema:
+                  type: string
+  
+servers:
+  - url: /api
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

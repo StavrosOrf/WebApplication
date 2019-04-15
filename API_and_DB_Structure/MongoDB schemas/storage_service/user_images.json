@@ -1,0 +1,7 @@
+{
+	"email": "string",
+	"glr_name": "string",
+	"img_name" : "string",
+	"img": "IMG_BINARY",
+	"access_token": "string"
+}

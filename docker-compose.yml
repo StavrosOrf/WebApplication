@@ -11,7 +11,6 @@ services:
   environment:
    - ENV=development
    - PORT=4000
-   - DB=mongodb://mongodb:27017/testing
    - ZK=localhost:2181
 
  app_logic_service:
@@ -23,7 +22,7 @@ services:
   environment:
    - ENV=development
    - PORT=4010
-   - DB=mongodb://mongodb:27017/testing
+   - DB=mongodb://mongodb_app_logic:27017/user_catalog
    - ZK=localhost:2181
 
  auth_service:
@@ -35,11 +34,11 @@ services:
   environment:
    - ENV=development
    - PORT=4020
-   - DB=mongodb://mongodb:27017/testing
+   - DB=mongodb://mongodb_auth:27018/registered_users
    - SECRET='TOP SECRET'
    - ZK=localhost:2181
 
- storage_service:
+ storage_service1:
   build: storage_service/
   ports:
    - "4030:4030"
@@ -48,28 +47,41 @@ services:
   environment:
    - ENV=development
    - PORT=4030
-   - DB=mongodb://mongodb:27017/testing
+   - DB=mongodb://mongodb_storage_service1:27019/storage1
    - ZK=localhost:2181
 
- mongodb:
+ mongodb_app_logic:
   image: mongo:latest
-  container_name: "mongodb"
+  container_name: "mongodb_app_logic"
   environment:
    - MONGO_DATA_DIR=/usr/data/db
    - MONGO_LOG_DIR=/dev/null
   volumes:
-   - ./data/db:/usr/data/db
-  ports:
-   - 4009:27017
-  command: mongod --smallfiles --logpath=/dev/null # --quiet
+   - ./data/app_db:/usr/data/db
+  command: mongod --smallfiles --port 27017 --logpath=/dev/null # --quiet
+
+ mongodb_auth:
+  image: mongo:latest
+  container_name: "mongodb_auth"
+  environment:
+   - MONGO_DATA_DIR=/usr/data/db
+   - MONGO_LOG_DIR=/dev/null
+  volumes:
+   - ./data/auth_db:/usr/data/db
+  command: mongod --smallfiles --port 27018 --logpath=/dev/null # --quiet
  
- zk:
-    build: zk_service
-    image: zookeeper:latest
-    restart: always
-    hostname: zk
-    ports:
-      - 4040:2181
+ mongodb_storage_service1:
+  image: mongo:latest
+  container_name: "mongodb_storage_service1"
+  environment:
+   - MONGO_DATA_DIR=/usr/data/db
+   - MONGO_LOG_DIR=/dev/null
+  volumes:
+   - ./data/ss1_db:/usr/data/db
+  command: mongod --smallfiles --port 27019 --logpath=/dev/null # --quiet
+
+
+
 networks:
  default:
   name: web_dev

@@ -1,0 +1,121 @@
+openapi: 3.0.0
+info:
+  description: This is the swagger file that goes with our server code
+  version: 1.0.0
+  title: Swagger ReST Article
+
+paths:
+                      
+  /image:
+    get:
+      operationId: index.get_image
+      tags:
+        - Image
+      summary: Return an image
+      description: Read an image by email, gallery name, img name and access_token from user_images db object
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: glr_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: img_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully read image from user_images db object
+          content:
+            application/json:
+              schema:
+                properties:
+                  image:
+                    type: string
+                    format: binary
+                    
+    post:
+      operationId: index.add_image
+      tags:
+        - Image
+      summary: Add an image
+      description: Add an image to a user gallery
+      security:
+        - jwt:
+            []
+      requestBody:
+        $ref: "#/components/requestBodies/add_image"
+      responses:
+        "200":
+          description: Successfully added image to user_images db object
+    
+    delete:
+      operationId: index.remove_image
+      tags:
+        - Image
+      summary: Remove image 
+      description: Remove image from user_images db object
+      parameters:
+        - name: my_email
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: glr_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: img_name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: access_token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully removed image from user_images db object
+
+servers:
+  - url: /api
+components:
+  requestBodies:
+    add_image:
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              my_email:
+                type: string
+              glr_name:
+                type: string
+              access_token:
+                type: string
+              img_name:
+                type: string
+              img:
+                type: string
+                format: binary
+      required: true
+
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

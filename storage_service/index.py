@@ -18,14 +18,16 @@ from app import app
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 
-my_client = kz_client.KazooClient('ZK')
+# my_client = kz_client.KazooClient('ZK')
  
-def my_listener(state):
-    if state == kz_client.KazooState.CONNECTED:
-        print("Client connected !")
+# def my_listener(state):
+#     if state == kz_client.KazooState.CONNECTED:
+#         print("Client connected !")
  
-my_client.add_listener(my_listener)
-my_client.start(timeout=5)
+# my_client.add_listener(my_listener)
+# my_client.start(timeout=5)
+
+
 if app:
     print('OK!!!!')
 @app.errorhandler(404)
