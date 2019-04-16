@@ -52,21 +52,20 @@ if app:
 #     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-def authenticate(my_email):
+def authenticate(my_email,token):
 
     URL = "localhost:4020/api/authenticate/"
-
-    myToken = '<token>'
+    my_email ="kati"
     myUrl = URL + my_email
-    head = {'Authorization': 'token {}'.format(myToken)}
+    head = {'Authorization': 'token {}'.format(token)}
 
     r = requests.get(myUrl, headers=head) 
-    
+
     if r :
         return True
     else:
         return False
-        
+
 
 
 def decode_token(token):
@@ -77,7 +76,8 @@ def decode_token(token):
 def get_all_users():
     # print("TEST")
     # mongo.db.users.find(name)
-    if authenticate(requests.my_email):
+    token = request.headers['Authorization'].split()[1]
+    if authenticate(requests.email,token):
         return "Failed to authorize",201
 
     return "Success",200
