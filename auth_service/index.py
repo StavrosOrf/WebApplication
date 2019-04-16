@@ -40,8 +40,12 @@ PORT = os.environ.get('PORT')
 #     print('OK!!!!')
 
 flask_bcrypt = Bcrypt(app.app)
-jwt = JWTManager(app.app)
-app.app.config['MONGO_URI'] = os.environ.get('DB')
+jwt = JWTManager(app.app) 
+# Docker
+# app.app.config['MONGO_URI'] = os.environ.get('DB')
+# Debug
+app.app.config['MONGO_URI'] = "mongodb://localhost:27017/myDatabase"  
+print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
 # @jwt.unauthorized_loader
@@ -62,13 +66,11 @@ def login():
     email, password = req_body['email'], req_body['password']
 
     user = mongo.db.reg_users.find_one({'email': email})
-    if user and 
-        flask_bcrypt.check_password_hash(user['password'],
-            password):
+    if user and flask_bcrypt.check_password_hash(user['password'], password):
         token = create_access_token(identity=req_body)
         mongo.db.logged_in_users.insert_one({"email": email, "token": token})
 
-        return jsonify({'token': access_token}), 200
+        return jsonify({'token': token}), 200
 
 #@app.app.route('/register', methods=['POST'])
 def register():
@@ -79,7 +81,7 @@ def register():
     name, email, password  = req_body['name'], req_body['email'], req_body['password']
     password_hash = flask_bcrypt.generate_password_hash(password)
     # Insert registered user
-    mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash)
+    mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
     
     return "Successfully registered user", 200
 
