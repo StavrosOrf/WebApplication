@@ -107,4 +107,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      x-bearerInfoFunc: decode_token
+      x-bearerInfoFunc: index.decode_token
