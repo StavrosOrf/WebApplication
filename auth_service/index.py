@@ -55,22 +55,29 @@ mongo = PyMongo(app.app)
 #         'message': 'Missing Authorization Header'
 #     }), 401
 
+def decode_token(token):
+    ''' Work-around to x-bearerInfoFunction required by connexion '''
+    return {"token": token}
 
 #@app.app.route('/auth', methods=['POST'])
 def login():
     ''' auth login endpoint '''
     #data = validate_user(request.get_json())
     #if data['ok']:
-    
     req_body = request.get_json() 
     email, password = req_body['email'], req_body['password']
-
     user = mongo.db.reg_users.find_one({'email': email})
     if user and flask_bcrypt.check_password_hash(user['password'], password):
         token = create_access_token(identity=req_body)
         mongo.db.logged_in_users.insert_one({"email": email, "token": token})
-
         return jsonify({'token': token}), 200
+
+def logout(my_email):
+    ''' logout user endpoint '''
+    token = request.headers['Authorization'].split()[1]
+    db_response = mongo.db.logged_in_users.delete_one({'email': my_email, 'token': token})
+    if db_response.deleted_count == 1:
+        return "Successfully logged out", 200
 
 #@app.app.route('/register', methods=['POST'])
 def register():
@@ -83,10 +90,6 @@ def register():
     # Insert registered user
     mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
     return "Successfully registered user", 200
-
-def decode_token(token):
-    ''' Work-around to x-bearerInfoFunction required by connexion '''
-    return {"token": token}
 
 def authenticate(my_email):
     ''' auth request endpoint '''
