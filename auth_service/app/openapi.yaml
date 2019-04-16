@@ -30,6 +30,29 @@ paths:
                 properties:
                   token:
                     type: string
+
+  /logout/{my_email}:
+    get:
+      operationId: index.logout
+      tags:
+        - Authorization
+      summary: Logout User
+      description: Attempt to log out user by querying logged in users db [Logout]
+        If logged_in_users.delete(email, token) -> Log out, (rval>=200) 
+        If !logged_in_users.delete(email, token) -> Fail (rval>=400)
+      security:
+        - jwt:
+            []
+      parameters:
+        - name: my_email
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully logged out
+        
   /register:
     post:
       operationId: index.register
