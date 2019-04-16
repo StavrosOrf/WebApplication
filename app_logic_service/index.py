@@ -4,9 +4,15 @@ import sys
 import requests
 from flask import jsonify, request, make_response, send_from_directory
 from kazoo import client as kz_client
+from flask import request
+from flask_pymongo import PyMongo
 import logging
 import connexion
 from connexion import NoContent
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                jwt_required, jwt_refresh_token_required, get_jwt_identity)
+from flask_jwt_extended import JWTManager
+
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -20,6 +26,13 @@ from app import app
 
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
+AUTH_PORT = os.environ.get('AUTH_PORT')
+SS1_PORT = os.environ.get('SS1_PORT')
+SS2_PORT = os.environ.get('SS2_PORT')
+
+app.app.config['MONGO_URI'] = os.environ.get('DB')
+print("Connected to DEBUG mongodb")
+mongo = PyMongo(app.app)
 
 #my_client = kz_client.KazooClient('ZK')
  
@@ -38,81 +51,76 @@ if app:
 #     #LOG.error(error)
 #     return make_response(jsonify({'error': 'Not found'}), 404)
 
-def kati():
-    return send_from_directory('dist', 'index.html')
+
+def authenticate(my_email):
+
+    URL = "localhost:4020/api/authenticate/"
+
+    myToken = '<token>'
+    myUrl = URL + my_email
+    head = {'Authorization': 'token {}'.format(myToken)}
+
+    r = requests.get(myUrl, headers=head) 
+    
+    if r :
+        return True
+    else:
+        return False
+        
 
 
-# @app.route('/<path:path>')
-# def static_proxy(path):
-#     """ static folder serve """
-#     file_name = path.split('/')[-1]
-#     dir_name = os.path.join('dist', '/'.join(path.split('/')[:-1]))
-#     return send_from_directory(dir_name, file_name)
+def decode_token(token):
+    ''' Work-around to x-bearerInfoFunction required by connexion '''
+    return {"token": token}
 
-def add_image1():
-
-    return 'You send the message: {}'.format(message), 200
-def get_image():
-
-    return 'You send the message: {}'.format(message), 200
-
-def remove_image():
-
-    return 'You send the message: {}'.format(message), 200
-
-def login():
-    return "Success", 200
-
-def register():
-    return "Success", 200
-
-def get_user():
-    return "Success", 200
-
-def get_all_friends():
-    return "Success", 200
-
-def add_friend():
-    return "Success", 200
-
-def remove_friend():
-    return "Success", 200
-
-def get_all_galleries():
-    return "Success", 200
-
-def add_gallery():
-    return "Success", 200
-
-def remove_gallery():
-    return "Success", 200
-
-def get_all_images():
-    return "Success", 200
 
 def get_all_users():
-    return "Success", 200
+    # print("TEST")
+    # mongo.db.users.find(name)
+    if authenticate(requests.my_email):
+        return "Failed to authorize",201
+
+    return "Success",200
 
 
+def get_user():
+    #authenticate
 
+    return "Success",200
+
+def get_all_friends():
+    return "Success",200
+def add_friend():
+    return "Success",200
+def remove_friend(): 
+    return "Success",200
+def get_all_galleries():
+    return "Success",200
+def add_gallery():
+    return "Success",200
+def remove_gallery():
+    return "Success",200
+def get_all_images():
+    return "Success",200
+def get_image():
+    return "Success",200
+def add_image():
+    return "Success",200
+def remove_image():
+    return "Success",200
 def get_comments():
-    return "Success", 200
-
+    return "Success",200
 def add_comment():
-    return "Success", 200
-
+    return "Success",200
 def remove_comment():
-    return "Success", 200
-
+    return "Success",200
 def edit_comment():
-    return "Success", 200
-
-
+    return "Success",200
 
 #application = app.app
 if __name__ == '__main__':
     #LOG.info('running environment: %s', os.environ.get('ENV'))
-    app.run(port=4010)
+    app.run(port=PORT)
     #app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
 #app.run(host='0.0.0.0', port=int(PORT)) # Run the app
 #WS S Sapp.run(host='0.0.0.1', port=int(PORT))
