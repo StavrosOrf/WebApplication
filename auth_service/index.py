@@ -58,7 +58,7 @@ mongo = PyMongo(app.app)
 
 #@app.app.route('/auth', methods=['POST'])
 def login():
-    ''' auth endpoint '''
+    ''' auth login endpoint '''
     #data = validate_user(request.get_json())
     #if data['ok']:
     
@@ -82,9 +82,23 @@ def register():
     password_hash = flask_bcrypt.generate_password_hash(password)
     # Insert registered user
     mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
-    
     return "Successfully registered user", 200
 
+def decode_token(token):
+    ''' Work-around to x-bearerInfoFunction required by connexion '''
+    return {"token": token}
+
+def authenticate(my_email):
+    ''' auth request endpoint '''
+    #data = validate_user(request.get_json())
+    #if data['ok']:
+    print(request.headers)
+    # Get token from "Authorization: Bearer <token>" part of header
+    token = request.headers['Authorization'].split()[1]
+    logged_in_user = mongo.db.logged_in_users.find_one({'email': my_email, 'token': token})
+    if logged_in_user:
+        return "Successfully authenticated user", 200
+    
 # @app.app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required
 # def refresh():
