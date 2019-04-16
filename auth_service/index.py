@@ -56,40 +56,32 @@ mongo = PyMongo(app.app)
 def login():
     ''' auth endpoint '''
     #data = validate_user(request.get_json())
-    email = {'email' : request.get_json()['email']}
-    password = {'password' : request.get_json()['password']}
-
+    #if data['ok']:
     
-    print(email)
-    user = mongo.db.users.find_one({'email':email['email']})
-    if user :
-        #del user['password']
-        access_token = create_access_token(identity=request.get_json())
-        refresh_token = create_refresh_token(identity=request.get_json())
-    
-        return jsonify({'ok': True, 'token': access_token,'refresh_token':refresh_token}), 200
-    else:
-        return jsonify({'ok': False, 'message': 'invalid username or password'}), 401
-  
+    req_body = request.get_json() 
+    email, password = req_body['email'], req_body['password']
 
+    user = mongo.db.reg_users.find_one({'email': email})
+    if user and 
+        flask_bcrypt.check_password_hash(user['password'],
+            password):
+        token = create_access_token(identity=req_body)
+        mongo.db.logged_in_users.insert_one({"email": email, "token": token})
+
+        return jsonify({'token': access_token}), 200
 
 #@app.app.route('/register', methods=['POST'])
-
 def register():
     ''' register user endpoint '''
     #data = validate_user(request.get_json())
     #if data['ok']:
-    name = request.get_json()['name']
-    email = request.get_json()['email']
-    password = request.get_json()['password']
+    req_body = request.get_json() 
+    name, email, password  = req_body['name'], req_body['email'], req_body['password']
+    password_hash = flask_bcrypt.generate_password_hash(password)
+    # Insert registered user
+    mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash)
     
-    #password_hash = flask_bcrypt.generate_password_hash(password)
-    mongo.db.users.insert_one(request.get_json())
-    # mongo.db.users.insert_one(email)
-    # mongo.db.users.insert_one(password_hash)
-    return jsonify({'ok': True, 'message': 'User created successfully!'}), 200
-    # else:
-    #     return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
+    return "Successfully registered user", 200
 
 # @app.app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required
@@ -112,9 +104,7 @@ def register():
 
 #     data = request.json()
 #     if request.method == 'DELETE':
-#         if data.get('email', None) is not None:
-#             db_response = mongo.db.users.delete_one({'email': data['email']})
-#             if db_response.deleted_count == 1:
+#         if data.get('email', None) is not None: #             db_response = mongo.db.users.delete_one({'email': data['email']}) #             if db_response.deleted_count == 1:
 #                 response = {'ok': True, 'message': 'record deleted'}
 #             else:
 #                 response = {'ok': True, 'message': 'no record found'}
