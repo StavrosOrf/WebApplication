@@ -43,7 +43,7 @@ services:
   ports:
    - "4030:4030"
   volumes:
-   - ./auth_service:/app
+   - ./storage_service:/app
   environment:
    - ENV=development
    - PORT=4030

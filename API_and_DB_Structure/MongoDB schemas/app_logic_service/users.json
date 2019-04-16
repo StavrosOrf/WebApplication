@@ -15,6 +15,7 @@
       "images": [
         {
           "img_name": "local_unique_string",
+          "img_id": "global_unique_string",
 		  "storage_services": [
 				{
 					"URI": "string"
