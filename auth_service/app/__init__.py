@@ -36,8 +36,12 @@ app.add_api('auth.yaml')
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 app.app.json_encoder = JSONEncoder
 
-app.app.config['JWT_SECRET_KEY'] = os.environ.get('SECRET')
-app.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
+# Docker
+# app.app.config['JWT_SECRET_KEY'] = os.environ.get('SECRET')
+# app.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
+# Debug
+app.app.config['JWT_SECRET_KEY'] = "ironman"
+app.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
 #from app.controllers import *
