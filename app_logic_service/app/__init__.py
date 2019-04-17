@@ -33,6 +33,6 @@ app.add_api('openapi.yaml')
 # mongo = PyMongo(app)
 
 # # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
-# app.json_encoder = JSONEncoder
+app.app.json_encoder = JSONEncoder
 
 # from app.controllers import *

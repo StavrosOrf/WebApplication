@@ -30,7 +30,8 @@ AUTH_PORT = os.environ.get('AUTH_PORT')
 SS1_PORT = os.environ.get('SS1_PORT')
 SS2_PORT = os.environ.get('SS2_PORT')
 
-app.app.config['MONGO_URI'] = os.environ.get('DB')
+#app.app.config['MONGO_URI'] = os.environ.get('DB')
+app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"  
 print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
@@ -54,13 +55,12 @@ if app:
 
 def authenticate(my_email,token):
 
-    URL = "localhost:4020/api/authenticate/"
-    my_email ="kati"
+    URL = "http://127.0.0.1:4020/api/authenticate/"
     myUrl = URL + my_email
     head = {'Authorization': 'token {}'.format(token)}
-
-    r = requests.get(myUrl, headers=head) 
-
+    print(head)
+    #r = requests.get(myUrl, headers=head) 
+    return True
     if r :
         return True
     else:
@@ -77,16 +77,22 @@ def get_all_users():
     # print("TEST")
     # mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
-    if authenticate(requests.email,token):
-        return "Failed to authorize",201
+    if not authenticate(request.get_json()['email'],token):
+        return "Failed to authorize",401
 
     return "Success",200
 
 
-def get_user():
+def get_user(email):
     #authenticate
+    mongo.db.users.insert_one({'email': email,"name":"Stavros","friends" : [],"galleries" : []})
 
-    return "Success",200
+    user = mongo.db.users.find_one({'email': email})
+
+    if user:
+        return jsonify({"name":user['name'],"email":user['email']}),200
+    else:
+        return "User not found",400
 
 def get_all_friends():
     return "Success",200
@@ -94,12 +100,42 @@ def add_friend():
     return "Success",200
 def remove_friend(): 
     return "Success",200
-def get_all_galleries():
-    return "Success",200
+
+def get_all_galleries(my_email):
+    #authenticate
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        glr_names = mongo.db.users.find_one( { 'email': my_email }, { 'galleries.glr_name' :1 })
+       # print(glr_names['galleries'][1]['glr_name']) # a way to access glr names
+        return glr_names,200 
+
+    return "Failure",400
+
 def add_gallery():
-    return "Success",200
-def remove_gallery():
-    return "Success",200
+    #authenticate
+    req_body = request.get_json() 
+    email, glr_name = req_body['my_email'], req_body['glr_name']
+
+    user = mongo.db.users.find_one({'email': email})
+    if user:
+        mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
+
+        return"Succesfully addded Gallery",200 
+
+    return "Failure",400
+
+def remove_gallery(my_email,glr_name):
+    #authenticate
+
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        mongo.db.users.update( { 'email': my_email }, { '$pull': { 'galleries': { "glr_name":glr_name} } })
+
+        return"Succesfully removed Gallery",200 
+
+    return "Failure",400
+
+
 def get_all_images():
     return "Success",200
 def get_image():

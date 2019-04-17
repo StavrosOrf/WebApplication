@@ -131,7 +131,7 @@ paths:
         "200":
           description: Successfully removed friend
                       
-  /galleries:
+  /galleries/{my_email}:
     post:
       operationId: index.get_all_galleries
       tags:
@@ -161,7 +161,7 @@ paths:
                     thumbnail:
                       type: string
                       format: binary
-                
+                 
   /galleries/add:
     post:
       operationId: index.add_gallery
