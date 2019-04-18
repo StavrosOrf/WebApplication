@@ -14,22 +14,7 @@ paths:
       summary: Return an image
       description: Read an image by email, gallery name, img name and access_token from user_images db object
       parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: glr_name
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: img_name
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: access_token
+        - name: img_id
           in: query
           required: true
           schema:
@@ -64,22 +49,7 @@ paths:
       summary: Remove image 
       description: Remove image from user_images db object
       parameters:
-        - name: my_email
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: glr_name
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: img_name
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: access_token
+        - name: img_id
           in: query
           required: true
           schema:
@@ -98,11 +68,10 @@ components:
           schema:
             type: object
             properties:
-              img_name:
-                type: string
               img:
                 type: string
                 format: binary
+
       required: true
 
   securitySchemes:
