@@ -16,10 +16,8 @@ from app import app
  #   'ROOT_LOGGER', 'root'), filename=os.path.join(ROOT_PATH, 'output.log'))
 
 # Port variable to run the server on.
-# PORT = os.environ.get('PORT')
+PORT = os.environ.get('PORT')
 # Debug
-PORT = 5000
-
 # my_client = kz_client.KazooClient('ZK')
  
 # def my_listener(state):

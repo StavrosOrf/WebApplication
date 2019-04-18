@@ -57,11 +57,10 @@ def authenticate(my_email,token):
     print("auth_entry")
     URL = "http://auth_service:4020/api/authenticate/"
     myUrl = URL + my_email
-    head = {'Authorization': 'token {}'.format(token)}
+    head = {'Authorization': 'Bearer {}'.format(token)}
     r = requests.get(myUrl, headers=head) 
     print(r)
-    return True
-    if r :
+    if r.status_code == 200 :
         return True
     else:
         return False
@@ -77,18 +76,19 @@ def get_all_users(email):
     print("TEST")
     # mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(request.get_json()['email'],token):
-        return "Failed to authorize",401
+    if not authenticate(email,token):
+        return "Failed to authorize",400
 
     return "Success",200
 
 def add_user():
+    print("entry")
     req_body = request.get_json() 
     email, name = req_body['email'], req_body['name']
-
+    print(req_body)
     mongo.db.users.insert_one({'email': email,"name":name,"friends" : [],"galleries" : []})
 
-    return"Succesfully created User",200 
+    return "Succesfully created User",200 
 
 def get_user(email):
     #authenticate
@@ -166,7 +166,7 @@ def add_gallery():
         if not user:
             mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
             return"Succesfully addded Gallery",200 
-        return "Failure,gallery already exists",401
+        return "Failure,gallery already exists",400
     return "Failure",400
 
 def remove_gallery(my_email,glr_name):
@@ -203,7 +203,7 @@ def add_image():
         if not user:
             mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
             return"Succesfully addded Gallery",200 
-        return "Failure,gallery already exists",401
+        return "Failure,gallery already exists",400
     return "Failure",400
 
 def remove_image():

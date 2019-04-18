@@ -2,6 +2,7 @@
 import os
 import sys
 import requests
+import json
 from flask import jsonify, request, make_response, send_from_directory
 from kazoo import client as kz_client
 from flask import request
@@ -94,9 +95,13 @@ def register():
     mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
 
     URL = "http://app_logic_service:4010/api/users/add"
-    
-    r = requests.get(URL,data={"email":email,"name": name}) 
-    if not r :
+    data = {"email":email,"name": name}
+    headers = {'Content-Type':'application/json'}
+    print(data)
+    r = requests.post(URL,json = data) 
+    print(r.status_code)
+    print(r.reason)
+    if r.status_code!=200 :
         return "Failed to  registered user", 400
     return "Successfully registered user", 200
 
