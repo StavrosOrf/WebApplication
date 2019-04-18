@@ -2,7 +2,7 @@
 import os
 import sys
 import requests
-from flask import jsonify,send_file, request, make_response, send_from_directory,render_template
+from flask import jsonify, send_file, request, make_response, send_from_directory,render_template
 from kazoo import client as kz_client
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -16,7 +16,9 @@ from app import app
  #   'ROOT_LOGGER', 'root'), filename=os.path.join(ROOT_PATH, 'output.log'))
 
 # Port variable to run the server on.
-PORT = os.environ.get('PORT')
+# PORT = os.environ.get('PORT')
+# Debug
+PORT = 5000
 
 # my_client = kz_client.KazooClient('ZK')
  
@@ -26,87 +28,42 @@ PORT = os.environ.get('PORT')
  
 # my_client.add_listener(my_listener)
 # # my_client.start(timeout=5)
-# def get_image():
-
-#     return "File successfully saved to "
-
-# def remove_image():
-
-#     return "File successfully saved to ."
-
-
-# def add_image():
-#     # if not request.files[]:
-#     #     return  jsonify("wrong data"), 400
-#     name = request.files['img_name']
-#     img = request.files['img']
-
-#     # if ext not in ('.png', '.jpg', '.jpeg'):
-#     #     return "File extension not allowed."
-
-#     save_path = "/images/{name}".format(name=name)
-
-
-#     if not os.path.exists(save_path):
-#         os.makedirs(save_path)
-
-#     file_path = "{path}/{file}".format(path=save_path, file=name)
-#     img.save(file_path)
-#     return  jsonify("successfully saved"), 200
-
-
-if app:
-    print('OK!!!!')
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+img_dir = os.path.join(APP_ROOT, "images/")
 
-@app.route('/')
-def index():
-    """ static files serve """
-    return send_from_directory('dist', 'index.html')
+def add_image():
+    ''' upload image endpoint'''
+    if not os.path.isdir(img_dir):
+        os.mkdir(img_dir)
+    
+    # check if the post request has the file part
+    if 'img' not in request.files:
+        print('No img part')
 
+    img_file = request.files['img'] 
+    pathname = "/".join([img_dir, img_file.filename])
+    img_file.save(pathname)
 
-@app.route("/add_image/<img_name>",methods=["POST"])
-def upload(img_name):
-    """ static folder serve """
-    target = os.path.join(APP_ROOT,'images/')
-    print(target)
-    print(request.headers)
-    if not os.path.isdir(target):
-        os.mkdir(target)
+    return "Successfully uploaded image.", 200
 
-    # for file in request.files.getlist("file"):
-    file = request.files['file']
-    print(file)
-    filename = img_name
-    print(img_name)
-   
-    destination = "/".join([target,filename])
-    file.save(destination)
+def get_image(img_id):
+    ''' get image endpoint '''
+    return send_file(img_dir+img_id)
 
-    return "SUCCESS",200
-
-
-@app.route('/img/<filename>',methods=["GET","DELETE"])
-def uploaded_file(filename):
-    if request.method == 'GET':
-        return send_file(os.path.join("../images/",filename))
-
-    if request.method == 'DELETE':
-        if os.path.exists(os.path.join(ROOT_PATH,"../images/",filename)):
-          os.remove(os.path.join("../images/",filename))
-          return "SUCCESS",200
-        else:
-          return("The file does not exist"),401 
-
-
+def remove_image(img_id):
+    ''' remove image endpoint '''
+    img_pathname = img_dir + img_id
+    if os.path.exists(img_pathname):
+        os.remove(img_pathname)
+        return "SUCCESS", 200
+    else:
+        return "Failed. File does not exist", 401 
 
 if __name__ == '__main__':
     #LOG.info('running environment: %s', os.environ.get('ENV'))
-    app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
-app.run(host='0.0.0.0', port=int(PORT)) # Run the app
-
-
+    # app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
+    app.app.run(host='0.0.0.0', port=int(PORT)) # Run the app
 
 # if __name__ == '__main__':
 #     #LOG.info('running environment: %s', os.environ.get('ENV'))

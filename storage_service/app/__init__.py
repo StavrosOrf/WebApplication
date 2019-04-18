@@ -22,10 +22,10 @@ class JSONEncoder(json.JSONEncoder):
 
 
 # create the flask object
-# app = connexion.App(__name__)
-# app.add_api('openapi.yaml')
+app = connexion.App(__name__)
+app.add_api('openapi.yaml')
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 # add mongo url to flask config, so that flask_pymongo can use it to make connection
 # app.config['MONGO_URI'] = os.environ.get('DB')
