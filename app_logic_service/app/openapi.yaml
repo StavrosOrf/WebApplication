@@ -5,79 +5,22 @@ info:
   title: Swagger ReST Article
 
 paths:
-  /:
-    get:
-      operationId: index.kati
-      tags:
-        - Home
-      summary: Access User Home Page
-      description: Access User Home Page 
-        If valid(token) -> serve Home Page (rval>=200) 
-        if !valid(token) -> (redirect) serve Login Page (rval>=300)
-      # security:
-      #   - jwt:
-      #       []
-      responses:
-        "200":
-          description: Served Home Page
-        "300":
-          description: Served Login Page (redirected)
-  
-  /login:
-    post:
-      operationId: index.login
-      tags:
-        - User
-      summary: Login User
-      description: Attempt login by querying reg. users db for credentials 
-        If success -> Get JWT and authenticate, (rval>=200) 
-        If fail -> Login failure (rval>=400)
-      requestBody:
-        $ref: "#/components/requestBodies/login"
-      security:
-        - jwt:
-            []
-      responses:
-        "200":
-          description: Successfully logged in
-          content:
-            application/json:
-              schema:
-                required:
-                  - token
-                properties:
-                  token:
-                    type: string
-                  email:
-                    type: string
-  /register:
-    post:
-      operationId: index.register
-      tags:
-        - User
-      summary: Register User
-      description: Attempt register by querying reg. users db for credentials
-        If exists(user) -> Register User Fails (rval>=400), 
-        If not exist -> Insert data into reg. users db (rval>=200)
-      security:
-        - jwt:
-            []
-      requestBody:
-        $ref: "#/components/requestBodies/register"
-      responses:
-        "200":
-          description: Successfully registered user
-  
   /users:
     get:
       operationId: index.get_all_users
       tags:
         - User
       summary: Return all users
-      description: Read all users from user database [Friends]
+      description: Return all users from users db object
       security:
         - jwt:
             []
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Successfully read users from user db object
@@ -91,21 +34,33 @@ paths:
                       type: string
                     email:
                       type: string
-  
+  /users/add:
+    post:
+      operationId: index.add_user
+      tags:
+        - User
+      summary: Add a new user 
+      description: Add a new user to user db object [Add]
+      requestBody:
+        $ref: "#/components/requestBodies/add_user"
+      
+      responses:
+        "200":
+          description: Successfully added friend
+          
   /users/{email}:
     get:
       operationId: index.get_user
       tags:
         - User
       summary: Return User
-      description: Return User Information [Profile]
+      description: Return User Information [View]
       security:
         - jwt:
             []
       parameters:
         - name: email
           in: path
-          description: Email of user to retrieve
           required: true
           schema:
             type: string
@@ -127,7 +82,7 @@ paths:
       tags:
         - Friend
       summary: Return all friends
-      description: Read all friends from user database [Friends]
+      description: Read all friends from user db object [Friends]
       security:
         - jwt:
             []
@@ -153,7 +108,7 @@ paths:
       tags:
         - Friend
       summary: Add a user as friend
-      description: Add a user as friend to user db object [Add_friend]
+      description: Add a user as friend to user db object [Add]
       security:
         - jwt:
             []
@@ -170,20 +125,18 @@ paths:
       tags:
         - Friend
       summary: Remove friend
-      description: Remove a user from friends in user db object [Remove_friend]
+      description: Remove a user from friends value in user db object [Remove]
       security:
         - jwt:
             []
       parameters:
         - name: my_email
           in: query
-          description: Email of current user
           required: true
           schema:
             type: string
         - name: friend_email
           in: query
-          description: Email of user to remove from friends
           required: true
           schema:
             type: string
@@ -191,20 +144,19 @@ paths:
         "200":
           description: Successfully removed friend
                       
-  /galleries:
+  /galleries/{my_email}:
     post:
       operationId: index.get_all_galleries
       tags:
         - Gallery
       summary: Return all galleries
-      description: Read all galleries from user database [Galleries]
+      description: Read all galleries from user db object [Galleries]
       security:
         - jwt:
             []
       parameters:
-        - name: email
+        - name: my_email
           in: path
-          description: Email of user whose galleries will be retrieved
           required: true
           schema:
             type: string
@@ -222,7 +174,7 @@ paths:
                     thumbnail:
                       type: string
                       format: binary
-                
+                 
   /galleries/add:
     post:
       operationId: index.add_gallery
@@ -252,13 +204,11 @@ paths:
       parameters:
         - name: my_email
           in: query
-          description: Email of current user
           required: true
           schema:
             type: string
-        - name: gallery_name
+        - name: glr_name
           in: query
-          description: Name of gallery to remove
           required: true
           schema:
             type: string
@@ -280,7 +230,7 @@ paths:
         $ref: "#/components/requestBodies/images"
       responses:
         "200":
-          description: Successfully read gallery from user db object
+          description: Successfully read gallery images from user db object
           content:
             application/json:
               schema:
@@ -293,55 +243,48 @@ paths:
                       type: string
                       format: binary
                       
-                      
   /image:
     get:
       operationId: index.get_image
       tags:
         - Image
       summary: Return an image
-      description: Read an image by email, gallery name and image name from user db object [a gallery]
+      description: Read an image by email, gallery name and image name from user db object
       security:
         - jwt:
             []
       parameters:
         - name: email
           in: query
-          description: Email of user
           required: true
           schema:
             type: string
-        - name: gallery_name
+        - name: glr_name
           in: query
-          description: Name of gallery 
           required: true
           schema:
             type: string
         - name: img_name
           in: query
-          description: Name of image
           required: true
           schema:
             type: string
       responses:
         "200":
-          description: Successfully read gallery from user db object
+          description: Successfully read image info from user db object
           content:
             application/json:
               schema:
                 properties:
-                  name:
+                  img_URL:
                     type: string
-                  image:
-                    type: string
-                    format: binary
                     
     post:
-      operationId: index.add_image1
+      operationId: index.add_image
       tags:
         - Image
       summary: Add an image
-      description: Add an image to a user gallery [Upload]
+      description: Add an image to a user gallery [Add]
       security:
         - jwt:
             []
@@ -349,42 +292,37 @@ paths:
         $ref: "#/components/requestBodies/add_image"
       responses:
         "200":
-          description: Successfully uploaded image to  user db object
+          description: Successfully added image to user db object and forwarded
+                       for upload
     
     delete:
       operationId: index.remove_image
       tags:
         - Image
       summary: Remove image 
-      description: Remove image from user db object [Add_gallery]
+      description: Remove image from user db object [Remove]
       security:
         - jwt:
             []
       parameters:
         - name: my_email
           in: query
-          description: User email
           required: true
           schema:
             type: string
-        
-        - name: gallery_name
+        - name: glr_name
           in: query
-          description: User email
           required: true
           schema:
             type: string
-        
         - name: img_name
           in: query
-          description: User email
           required: true
           schema:
             type: string
-
       responses:
         "200":
-          description: Successfully added friend
+          description: Successfully removed image from user db object and     forwarded request for file removal
                     
   /image/comments:
     post:
@@ -392,7 +330,7 @@ paths:
       tags:
         - Comment
       summary: Return all comments of an image
-      description: Read an image by email, gallery name and image name from user db object [a gallery]
+      description: Return all comments by email, gallery name and image name from user db object
       security:
         - jwt:
             []
@@ -400,7 +338,7 @@ paths:
         $ref: "#/components/requestBodies/comments"
       responses:
         "200":
-          description: Successfully read gallery from user db object
+          description: Successfully returned comments from user db object
           content:
             application/json:
               schema:
@@ -409,7 +347,7 @@ paths:
                   properties:
                     username:
                       type: string
-                    comment_id:
+                    c_id:
                       type: string
                     comment:
                       type: string
@@ -420,14 +358,13 @@ paths:
       tags:
         - Comment
       summary: Add a comment
-      description: Add a comment to an image in user db object [Add_gallery]
+      description: Add a comment to an image in user db object [Comment]
       security:
         - jwt:
             []
       parameters:
         - name: id
           in: path
-          description: Comment id
           required: true
           schema:
             type: string
@@ -435,41 +372,39 @@ paths:
         $ref: "#/components/requestBodies/add_comment"
       responses:
         "200":
-          description: Successfully added friend
+          description: Successfully added comment
           
     delete:
       operationId: index.remove_comment
       tags:
         - Comment
       summary: Remove comment
-      description: Remove comment from image from user db object [Add_gallery]
+      description: Remove comment from image from user db object [Remove]
       security:
         - jwt:
             []
       parameters:
         - name: id
           in: path
-          description: Comment id
           required: true
           schema:
             type: string
       responses:
         "200":
-          description: Successfully added friend
+          description: Successfully removed comment
           
     patch:
       operationId: index.edit_comment
       tags:
         - Comment
       summary: Edit comment
-      description: Edit image comment and update user db object [Add_gallery]
+      description: Edit image comment and update user db object [Edit]
       security:
         - jwt:
             []
       parameters:
         - name: id
           in: path
-          description: Comment id
           required: true
           schema:
             type: string
@@ -477,14 +412,13 @@ paths:
         $ref: "#/components/requestBodies/edit_comment"
       responses:
         "200":
-          description: Successfully added friend
+          description: Successfully editted comment
   
 servers:
   - url: /api
 components:
   requestBodies:
     login:
-      description: Login credentials
       content:
         application/json:
           schema:
@@ -497,7 +431,6 @@ components:
       required: true
     
     register:
-      description: Register credentials
       content:
         application/json:
           schema:
@@ -512,44 +445,60 @@ components:
       required: true
 
     friends:
-      description: Friends body
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              email:
-                description: Email of user whose friends we will retrieve
-                type: string
-      required: true
-    
-    add_friend:
-      description: Add Friend body
       content:
         application/json:
           schema:
             type: object
             properties:
               my_email:
-                description: Email of current user
-                type: string
-              friend_email:
-                description: Email of user to add as friend
                 type: string
       required: true
-            
-    images:
-      description: Images body
+    
+    add_user:
       content:
         application/json:
           schema:
             type: object
             properties:
               email:
-                description: Email of user
                 type: string
-              gallery_name:
-                description: Name of gallery containing images
+              name:
+                type: string
+      required: true
+      
+    add_friend:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              my_email:
+                type: string
+              friend_email:
+                type: string
+      required: true
+    
+    add_gallery:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              my_email:
+                type: string
+              glr_name:
+                type: string
+      required: true
+  
+    images:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              my_email:
+                type: string
+              glr_name:
                 type: string
       required: true
     
@@ -561,54 +510,46 @@ components:
             properties:
               my_email:
                 type: string
-              gallery_name:
+              glr_name:
                 type: string
-              image_name:
+              img_name:
+                type: string
+              img:
                 type: string
                 format: binary
       required: true
             
     comments:
-      description: Comments body
       content:
         application/json:
           schema:
             type: object
             properties:
               email:
-                description: Email of user
                 type: string
-              gallery_name:
-                description: Name of gallery containing image
+              glr_name:
                 type: string
               img_name:
-                description: Name of image
                 type: string
       required: true
     
     add_comment:
-      description: Add comment body
       content:
         application/json:
           schema:
             type: object
             properties:
               email:
-                description: Email of user
                 type: string
-              gallery_name:
-                description: Name of gallery containing image
+              glr_name:
                 type: string
               img_name:
-                description: Name of image
                 type: string
               comment:
-                description: Comment string
                 type: string
       required: true
     
     edit_comment:
-      description: Edit comment body
       content:
         application/json:
           schema:
@@ -617,7 +558,7 @@ components:
               email:
                 description: Email of user
                 type: string
-              gallery_name:
+              glr_name:
                 description: Name of gallery containing image
                 type: string
               img_name:
@@ -627,24 +568,10 @@ components:
                 description: Comment string
                 type: string
       required: true
-  
-    add_gallery:
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              my_email:
-                description: Email of current user
-                type: string
-              gallery_name:
-                description: Email of user to add as friend
-                type: string
-      required: true
-  
+
   securitySchemes:
     jwt:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      
+      x-bearerInfoFunc: index.decode_token

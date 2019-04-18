@@ -16,9 +16,6 @@ paths:
         If !reg_users.exists(user) -> Login failure (rval>=400)
       requestBody:
         $ref: "#/components/requestBodies/login"
-      security:
-        - jwt:
-            []
       responses:
         "200":
           description: Successfully logged in
@@ -62,9 +59,6 @@ paths:
       description: Attempt register by querying reg. users db [Register]
         If reg_users.exists(user) -> Register User Fails (rval>=400), 
         If !reg_users.exists(user) -> Insert data into reg. users db (rval>=200)
-      security:
-        - jwt:
-            []
       requestBody:
         $ref: "#/components/requestBodies/register"
       responses:

@@ -42,9 +42,9 @@ PORT = os.environ.get('PORT')
 flask_bcrypt = Bcrypt(app.app)
 jwt = JWTManager(app.app) 
 # Docker
-# app.app.config['MONGO_URI'] = os.environ.get('DB')
+app.app.config['MONGO_URI'] = os.environ.get('DB')
 # Debug
-app.app.config['MONGO_URI'] = "mongodb://localhost:27017/myDatabase"  
+#app.app.config['MONGO_URI'] = "mongodb://localhost:27017/myDatabase"  
 print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
@@ -71,6 +71,8 @@ def login():
         token = create_access_token(identity=req_body)
         mongo.db.logged_in_users.insert_one({"email": email, "token": token})
         return jsonify({'token': token}), 200
+    return "Login failed",400
+
 
 def logout(my_email):
     ''' logout user endpoint '''
@@ -88,7 +90,14 @@ def register():
     name, email, password  = req_body['name'], req_body['email'], req_body['password']
     password_hash = flask_bcrypt.generate_password_hash(password)
     # Insert registered user
+    #Check if reg users already exists
     mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
+
+    URL = "http://app_logic_service:4010/api/users/add"
+    
+    r = requests.get(URL,data={"email":email,"name": name}) 
+    if not r :
+        return "Failed to  registered user", 400
     return "Successfully registered user", 200
 
 def authenticate(my_email):
@@ -101,6 +110,7 @@ def authenticate(my_email):
     logged_in_user = mongo.db.logged_in_users.find_one({'email': my_email, 'token': token})
     if logged_in_user:
         return "Successfully authenticated user", 200
+    return "failed to authenticate user", 400
     
 # @app.app.route('/refresh', methods=['POST'])
 # @jwt_refresh_token_required

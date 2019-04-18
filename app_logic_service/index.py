@@ -4,9 +4,15 @@ import sys
 import requests
 from flask import jsonify, request, make_response, send_from_directory
 from kazoo import client as kz_client
+from flask import request
+from flask_pymongo import PyMongo
 import logging
 import connexion
 from connexion import NoContent
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                jwt_required, jwt_refresh_token_required, get_jwt_identity)
+from flask_jwt_extended import JWTManager
+
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -20,6 +26,14 @@ from app import app
 
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
+AUTH_PORT = os.environ.get('AUTH_PORT')
+SS1_PORT = os.environ.get('SS1_PORT')
+SS2_PORT = os.environ.get('SS2_PORT')
+
+app.app.config['MONGO_URI'] = os.environ.get('DB')
+#app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"  
+print("Connected to DEBUG mongodb")
+mongo = PyMongo(app.app)
 
 #my_client = kz_client.KazooClient('ZK')
  
@@ -38,81 +52,175 @@ if app:
 #     #LOG.error(error)
 #     return make_response(jsonify({'error': 'Not found'}), 404)
 
-def kati():
-    return send_from_directory('dist', 'index.html')
+
+def authenticate(my_email,token):
+    print("auth_entry")
+    URL = "http://auth_service:4020/api/authenticate/"
+    myUrl = URL + my_email
+    head = {'Authorization': 'token {}'.format(token)}
+    r = requests.get(myUrl, headers=head) 
+    print(r)
+    return True
+    if r :
+        return True
+    else:
+        return False
+        
 
 
-# @app.route('/<path:path>')
-# def static_proxy(path):
-#     """ static folder serve """
-#     file_name = path.split('/')[-1]
-#     dir_name = os.path.join('dist', '/'.join(path.split('/')[:-1]))
-#     return send_from_directory(dir_name, file_name)
+def decode_token(token):
+    ''' Work-around to x-bearerInfoFunction required by connexion '''
+    return {"token": token}
 
-def add_image1():
 
-    return 'You send the message: {}'.format(message), 200
-def get_image():
+def get_all_users(email):
+    print("TEST")
+    # mongo.db.users.find(name)
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(request.get_json()['email'],token):
+        return "Failed to authorize",401
 
-    return 'You send the message: {}'.format(message), 200
+    return "Success",200
 
-def remove_image():
+def add_user():
+    req_body = request.get_json() 
+    email, name = req_body['email'], req_body['name']
 
-    return 'You send the message: {}'.format(message), 200
+    mongo.db.users.insert_one({'email': email,"name":name,"friends" : [],"galleries" : []})
 
-def login():
-    return "Success", 200
+    return"Succesfully created User",200 
 
-def register():
-    return "Success", 200
+def get_user(email):
+    #authenticate
+   
+    print("TEST")
+    # mongo.db.users.find(name)
+    token = request.headers['Authorization'].split()[1]
+    print(token)
+    if not authenticate(email,token):
+        return "Failed to authorize",401
 
-def get_user():
-    return "Success", 200
+    user = mongo.db.users.find_one({'email': email})
+
+    if user:
+        return jsonify({"name":user['name'],"email":user['email']}),200
+    else:
+        return "User not found",400
 
 def get_all_friends():
-    return "Success", 200
+
+    req_body = request.get_json() 
+    my_email= req_body['my_email']
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        friends = mongo.db.users.find_one( { 'email': my_email }, { 'friends' :1 })
+       # print(glr_names['galleries'][1]['glr_name']) # a way to access glr names
+        return friends,200 
+
+    return "Failure",400
 
 def add_friend():
-    return "Success", 200
+     #authenticate
+    req_body = request.get_json() 
+    my_email, friend_email = req_body['my_email'], req_body['friend_email']
 
-def remove_friend():
-    return "Success", 200
+    user = mongo.db.users.find_one({'email': my_email})
+    friend = mongo.db.users.find_one({'email': friend_email})
+    if user and friend:
+        friend_name = friend['name']
+        mongo.db.users.update( { 'email': my_email }, { '$push': { 'friends': { "email":friend_email,"name":friend_name } } })
 
-def get_all_galleries():
-    return "Success", 200
+        return"Succesfully addded Friend",200 
+
+    return "Failure",400
+
+
+    return "Success",200
+def remove_friend(my_email,friend_email): 
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        mongo.db.users.update( { 'email': my_email }, { '$pull': { 'friends': { "email":friend_email } } })
+
+        return"Succesfully removed Friend",200 
+
+    return "Failure",400
+
+def get_all_galleries(my_email):
+    #authenticate
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        glr_names = mongo.db.users.find_one( { 'email': my_email }, { 'galleries.glr_name' :1 })
+       # print(glr_names['galleries'][1]['glr_name']) # a way to access glr names
+        return glr_names,200 
+
+    return "Failure",400
 
 def add_gallery():
-    return "Success", 200
+    #authenticate
+    req_body = request.get_json() 
+    email, glr_name = req_body['my_email'], req_body['glr_name']
 
-def remove_gallery():
-    return "Success", 200
+    user = mongo.db.users.find_one({'email': email})
+    if user:
+        user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name})
+        if not user:
+            mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
+            return"Succesfully addded Gallery",200 
+        return "Failure,gallery already exists",401
+    return "Failure",400
+
+def remove_gallery(my_email,glr_name):
+    #authenticate
+
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        mongo.db.users.update( { 'email': my_email }, { '$pull': { 'galleries': { "glr_name":glr_name} } })
+
+        return"Succesfully removed Gallery",200 
+
+    return "Failure",400
+
 
 def get_all_images():
-    return "Success", 200
+    return "Success",200
+def get_image():
+    return "Success",200
 
-def get_all_users():
-    return "Success", 200
+def add_image():
 
+    req_body = request.get_json() 
+    print("hi")
+    print(request.files)
+    print(request)
+    my_email, glr_name = request.files['my_email'], request.files['glr_name']
+    print(my_email)
+    img_name, img = req_body['g=img_name',req_body['img']]
+    print(img)
+    return "Failure",200
+    user = mongo.db.users.find_one({'email': my_email})
+    if user:
+        user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
+        if not user:
+            mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
+            return"Succesfully addded Gallery",200 
+        return "Failure,gallery already exists",401
+    return "Failure",400
 
-
+def remove_image():
+    return "Success",200
 def get_comments():
-    return "Success", 200
-
+    return "Success",200
 def add_comment():
-    return "Success", 200
-
+    return "Success",200
 def remove_comment():
-    return "Success", 200
-
+    return "Success",200
 def edit_comment():
-    return "Success", 200
-
-
+    return "Success",200
 
 #application = app.app
 if __name__ == '__main__':
     #LOG.info('running environment: %s', os.environ.get('ENV'))
-    app.run(port=4010)
+    app.run(port=PORT)
     #app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
 #app.run(host='0.0.0.0', port=int(PORT)) # Run the app
 #WS S Sapp.run(host='0.0.0.1', port=int(PORT))
