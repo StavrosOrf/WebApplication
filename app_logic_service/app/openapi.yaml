@@ -34,7 +34,20 @@ paths:
                       type: string
                     email:
                       type: string
-  
+  /users/add:
+    post:
+      operationId: index.add_user
+      tags:
+        - User
+      summary: Add a new user 
+      description: Add a new user to user db object [Add]
+      requestBody:
+        $ref: "#/components/requestBodies/add_user"
+      
+      responses:
+        "200":
+          description: Successfully added friend
+          
   /users/{email}:
     get:
       operationId: index.get_user
@@ -441,6 +454,18 @@ components:
                 type: string
       required: true
     
+    add_user:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+      required: true
+      
     add_friend:
       content:
         application/json:

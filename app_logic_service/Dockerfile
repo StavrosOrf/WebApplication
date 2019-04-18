@@ -5,4 +5,4 @@ EXPOSE 4010
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 # RUN pip install connexion[ui-swagger]  
-ENTRYPOINT ["python","index.py"]
+ENTRYPOINT ["python","-u","index.py"]

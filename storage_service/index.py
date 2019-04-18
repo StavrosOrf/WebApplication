@@ -60,10 +60,6 @@ if app:
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-@app.route('/')
-def index():
-    """ static files serve """
-    return send_from_directory('dist', 'index.html')
 
 
 @app.route("/add_image/<img_name>",methods=["POST"])
