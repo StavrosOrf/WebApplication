@@ -12,7 +12,9 @@ from connexion import NoContent
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity)
 from flask_jwt_extended import JWTManager
-
+from requests_toolbelt.multipart import decoder
+import string
+import random
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -27,11 +29,13 @@ from app import app
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 AUTH_PORT = os.environ.get('AUTH_PORT')
-SS1_PORT = os.environ.get('SS1_PORT')
-SS2_PORT = os.environ.get('SS2_PORT')
+# SS1_URI = os.environ.get('SS1_URI')
+# SS2_URI = os.environ.get('SS2_URI')
 
-app.app.config['MONGO_URI'] = os.environ.get('DB')
-#app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"  
+#app.app.config['MONGO_URI'] = os.environ.get('DB')
+app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
+SS1_URI = "http://storage_service1:4030"
+SS2_URI = "http://storage_service1:4031"  
 print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
@@ -71,15 +75,21 @@ def decode_token(token):
     ''' Work-around to x-bearerInfoFunction required by connexion '''
     return {"token": token}
 
+def id_generator(size=15, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))    
+
 
 def get_all_users(email):
     print("TEST")
     # mongo.db.users.find(name)
-    token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
-        return "Failed to authorize",400
-
-    return "Success",200
+    # token = request.headers['Authorization'].split()[1]
+    # if not authenticate(email,token):
+    #     return "Failed to authorize",400
+    usr_list = []
+    users = mongo.db.users.find()
+    for usr in users:
+        usr_list.append(usr['email']+" "+ usr['name'])
+    return usr_list,2001
 
 def add_user():
     print("entry")
@@ -97,8 +107,8 @@ def get_user(email):
     # mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
     print(token)
-    if not authenticate(email,token):
-        return "Failed to authorize",401
+    # if not authenticate(email,token):
+    #     return "Failed to authorize",401
 
     user = mongo.db.users.find_one({'email': email})
 
@@ -188,22 +198,32 @@ def get_image():
 
 def add_image():
 
-    req_body = request.get_json() 
-    print("hi")
-    print(request.files)
-    print(request)
-    my_email, glr_name = request.files['my_email'], request.files['glr_name']
-    print(my_email)
-    img_name, img = req_body['g=img_name',req_body['img']]
-    print(img)
-    return "Failure",200
-    user = mongo.db.users.find_one({'email': my_email})
+    my_email, glr_name = request.form['my_email'], request.form['glr_name']
+    img_name, img = request.files['img'].filename,request.files['img']
+
+    user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
-        user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
-        if not user:
-            mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
-            return"Succesfully addded Gallery",200 
-        return "Failure,gallery already exists",400
+        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):
+            return "Image name already exists",400
+
+        ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
+        access_token = id_generator();
+        mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
+        { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
+
+        files = [2]
+        img.filename = my_email+"."+access_token
+        for i in range(2): 
+            URL = ss_uri[i]+"/api/Image"
+            files[i] = {'img':img.read()}
+            r = requests.post(URL,files = files[i]) 
+            print(img)
+            if not r.ok:
+                print(r)
+                return "Failure on SS",400
+
+        return"Succesfully addded Image",200 
+        
     return "Failure",400
 
 def remove_image():

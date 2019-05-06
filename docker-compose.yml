@@ -26,8 +26,8 @@ services:
    - DB=mongodb://mongodb_app_logic:27017/user_catalog
    - ZK=localhost:2181
    - AUTH_PORT= 4020
-   - SS1_PORT = 4030
-   - SS2_PORT = 4031
+   - SS1_URI = 'http://storage_service1:4030'
+   - SS2_URI = 'http://storage_service1:4031'
 
  auth_service:
   build: auth_service/
