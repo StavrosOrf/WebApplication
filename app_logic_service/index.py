@@ -193,8 +193,24 @@ def remove_gallery(my_email,glr_name):
 
 def get_all_images():
     return "Success",200
-def get_image():
-    return "Success",200
+
+def get_image(email,glr_name,img_name):
+    user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
+    print(user)
+    if user:
+        for image in user['galleries'][0]['Images']:
+            
+            if image['img_name'] == img_name:
+                if random.randint(1,2) == 1:
+                    ss_uri = image['ss1_uri']
+                else:
+                    ss_uri = image['ss2_uri']
+
+                return ss_uri+"/api/image?img_id="+email+"."+image["access_token"],200           
+        
+
+    return "Failure",400
+    
 
 def add_image():
 
@@ -211,23 +227,45 @@ def add_image():
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
         { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
 
-        files = [2]
-        img.filename = my_email+"."+access_token
-        for i in range(2): 
-            URL = ss_uri[i]+"/api/Image"
-            files[i] = {'img':img.read()}
-            r = requests.post(URL,files = files[i]) 
-            print(img)
-            if not r.ok:
-                print(r)
-                return "Failure on SS",400
+        # files = [0,0]
+        # img.filename = my_email+"."+access_token
+        # for i in range(2): 
+        #     URL = ss_uri[i]+"/api/Image"
+        #     files[i] = {'img':img.read()}
+        #     r = requests.post(URL,files = files[i]) 
+        #     print(img)
+        #     if not r.ok:
+        #         print(r)
+        #         return "Failure on SS",400
 
         return"Succesfully addded Image",200 
         
-    return "Failure",400
+    
 
-def remove_image():
-    return "Success",200
+def remove_image(my_email,glr_name,img_name):
+    user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
+
+    if user:
+        user = mongo.db.users.find_one({'email': my_email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
+        uri = [0,0]
+        for image in user['galleries'][0]['Images']:
+             if image['img_name'] == img_name:
+                access_token = image['access_token']
+                uri[0] = image['ss1_uri']
+                uri[1] = image['ss2_uri']
+
+        mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$pull': { 'galleries.$.Images': { "img_name":img_name }}})
+       
+        # for i in range(2): 
+        #     URL = uri[i]+"/api/Image?img_id=" + "my_email"+"."+access_token
+        #     r = requests.delete(URL) 
+        #     if not r.ok:
+        #         print(r)
+        #         return "Failure on SS",400
+        return "Successfully deleted image",200
+    return "Failure",400 
+
+
 def get_comments():
     return "Success",200
 def add_comment():
