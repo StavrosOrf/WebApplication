@@ -8,4 +8,4 @@ Flask_Bcrypt
 jsonschema<3
 Flask_JWT_Extended
 connexion[swagger-ui]
-requests-toolbelt
+#requests-toolbelt

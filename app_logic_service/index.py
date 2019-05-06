@@ -268,11 +268,28 @@ def remove_image(my_email,glr_name,img_name):
 
 def get_comments():
     return "Success",200
-def add_comment():
+
+def add_comment(id):
+    req_body = request.get_json() 
+    email, glr_name = req_body['email'], req_body['glr_name']
+    img_name, comment = req_body['img_name'], req_body['comment']
+    user_name = req_body['user_name']
+
+    user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name,'galleries.Images.img_name':img_name})
+    print(user)
+    if user:
+
+        comm_id = id_generator();
+        mongo.db.users.update( { 'email': email,'galleries.glr_name':glr_name,'galleries.Images.img_name':img_name }, 
+            { '$push':{ 'galleries.$[0].Images.$[1].Comments': { "commend_id": comm_id,"user": user_name,"comment":comment } } },
+        {arrayFilters: [ { "galleries.glr_name":glr_name }]})
+
     return "Success",200
-def remove_comment():
+
+
+def remove_comment(id):
     return "Success",200
-def edit_comment():
+def edit_comment(id):
     return "Success",200
 
 #application = app.app
