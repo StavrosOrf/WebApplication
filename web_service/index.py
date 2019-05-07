@@ -34,12 +34,33 @@ def not_found(error):
     #LOG.error(error)
     return make_response(jsonify({'error': 'Not found'}), 404)
 
+def authenticate(my_email, token):
+    URL = "http://auth_service:4020/api/authenticate/"
+    myUrl = URL + my_email
+    head = {'Authorization': 'Bearer {}'.format(token)}
+    r = requests.get(myUrl, headers=head) 
+    print(r)
+    if r.status_code == 200 :
+        return True
+    else:
+        return False
 
 @app.route('/')
-def index():
+def serve_home():
     """ static files serve """
-    return send_from_directory('dist', 'index.html')
+    my_email = request.headers['Email']
+    token = request.headers['Authorization'].split()[1];
+    if not token:
+        token_is_valid = authenticate(my_email, token)
+    if (not token) || (not token_is_valid):
+        return send_from_directory('UI', 'login.html')
+    elif token_is_valid:
+        return send_from_directory('UI', 'index.html')
 
+@app.route('/register')
+def serve_register():
+    """ static files serve """
+   return send_from_directory('UI', 'register.html')
 
 @app.route('/<path:path>')
 def static_proxy(path):
@@ -47,7 +68,6 @@ def static_proxy(path):
     file_name = path.split('/')[-1]
     dir_name = os.path.join('dist', '/'.join(path.split('/')[:-1]))
     return send_from_directory(dir_name, file_name)
-
 
 if __name__ == '__main__':
     #LOG.info('running environment: %s', os.environ.get('ENV'))
