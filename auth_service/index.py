@@ -8,7 +8,7 @@ from kazoo import client as kz_client
 from flask import request
 from flask_pymongo import PyMongo
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                jwt_required, jwt_refresh_token_required, get_jwt_identity)
+                                jwt_required, jwt_refresh_token_required, get_jwt_identity,get_jwt_claims)
 from app import app
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
@@ -19,6 +19,7 @@ sys.path.append(os.path.join(ROOT_PATH, 'modules'))
 
 import connexion
 from connexion import NoContent
+from jwt import(encode,decode)
 
 #from logger import logger 
 
@@ -69,8 +70,11 @@ def login():
     email, password = req_body['email'], req_body['password']
     user = mongo.db.reg_users.find_one({'email': email})
     if user and flask_bcrypt.check_password_hash(user['password'], password):
-        token = create_access_token(identity=req_body)
+        # token = create_access_token(identity=req_body)
+        token = encode(req_body,os.environ.get('SECRET'),algorithm='HS256')
         mongo.db.logged_in_users.insert_one({"email": email, "token": token})
+
+        # print(decode(token,os.environ.get('SECRET'),algorithms=['HS256']))
         return jsonify({'token': token}), 200
     return "Login failed",400
 

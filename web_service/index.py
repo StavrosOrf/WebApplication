@@ -48,19 +48,20 @@ def authenticate(my_email, token):
 @app.route('/')
 def serve_home():
     """ static files serve """
-    my_email = request.headers['Email']
-    token = request.headers['Authorization'].split()[1];
-    if not token:
+    if 'Email' in request.headers and 'Authorization' in request.headers:
+        my_email = request.headers['Email']
+        token = request.headers['Authorization'].split()[1];
         token_is_valid = authenticate(my_email, token)
-    if (not token) || (not token_is_valid):
-        return send_from_directory('UI', 'login.html')
-    elif token_is_valid:
-        return send_from_directory('UI', 'index.html')
+        if (not token) or (not token_is_valid):
+            return send_from_directory('UI', 'login.html')
+        elif token_is_valid:
+            return send_from_directory('UI', 'index.html')
+    return send_from_directory('UI', 'login.html')
 
 @app.route('/register')
 def serve_register():
     """ static files serve """
-   return send_from_directory('UI', 'register.html')
+    return send_from_directory('UI','register.html')
 
 @app.route('/<path:path>')
 def static_proxy(path):

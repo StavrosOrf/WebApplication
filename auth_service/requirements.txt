@@ -8,3 +8,4 @@ Flask_Bcrypt
 jsonschema<3
 kazoo
 connexion[swagger-ui]
+PyJWT
