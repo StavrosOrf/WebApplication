@@ -12,7 +12,6 @@ from connexion import NoContent
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity)
 from flask_jwt_extended import JWTManager
-from requests_toolbelt.multipart import decoder
 import string
 import random
 
@@ -29,13 +28,12 @@ from app import app
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 AUTH_PORT = os.environ.get('AUTH_PORT')
-# SS1_URI = os.environ.get('SS1_URI')
-# SS2_URI = os.environ.get('SS2_URI')
-
-#app.app.config['MONGO_URI'] = os.environ.get('DB')
-app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
+SS1_URI = os.environ.get('SS1_URI')
+SS2_URI = os.environ.get('SS2_URI')
+app.app.config['MONGO_URI'] = os.environ.get('DB')
+# app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
 SS1_URI = "http://storage_service1:4030"
-SS2_URI = "http://storage_service1:4031"  
+SS2_URI = "http://storage_service2:4031"  
 print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
@@ -80,19 +78,20 @@ def id_generator(size=15, chars=string.ascii_uppercase + string.ascii_lowercase 
 
 
 def get_all_users(email):
-    print("TEST")
-    # mongo.db.users.find(name)
-    # token = request.headers['Authorization'].split()[1]
-    # if not authenticate(email,token):
-    #     return "Failed to authorize",400
+
+    #mongo.db.users.find(name)
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(email,token):
+        return "Failed to authorize",400
+
     usr_list = []
     users = mongo.db.users.find()
     for usr in users:
         usr_list.append(usr['email']+" "+ usr['name'])
-    return usr_list,2001
+    return usr_list,200
 
 def add_user():
-    print("entry")
+
     req_body = request.get_json() 
     email, name = req_body['email'], req_body['name']
     print(req_body)
@@ -101,14 +100,12 @@ def add_user():
     return "Succesfully created User",200 
 
 def get_user(email):
-    #authenticate
-   
-    print("TEST")
-    # mongo.db.users.find(name)
+
     token = request.headers['Authorization'].split()[1]
-    print(token)
-    # if not authenticate(email,token):
-    #     return "Failed to authorize",401
+    if not authenticate(email,token):
+        return "Failed to authorize",400
+
+    token = request.headers['Authorization'].split()[1]
 
     user = mongo.db.users.find_one({'email': email})
 
@@ -121,6 +118,11 @@ def get_all_friends():
 
     req_body = request.get_json() 
     my_email= req_body['my_email']
+
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+        
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         friends = mongo.db.users.find_one( { 'email': my_email }, { 'friends' :1 })
@@ -130,10 +132,13 @@ def get_all_friends():
     return "Failure",400
 
 def add_friend():
-     #authenticate
     req_body = request.get_json() 
     my_email, friend_email = req_body['my_email'], req_body['friend_email']
 
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+        
     user = mongo.db.users.find_one({'email': my_email})
     friend = mongo.db.users.find_one({'email': friend_email})
     if user and friend:
@@ -146,7 +151,11 @@ def add_friend():
 
 
     return "Success",200
-def remove_friend(my_email,friend_email): 
+def remove_friend(my_email,friend_email):
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         mongo.db.users.update( { 'email': my_email }, { '$pull': { 'friends': { "email":friend_email } } })
@@ -156,7 +165,10 @@ def remove_friend(my_email,friend_email):
     return "Failure",400
 
 def get_all_galleries(my_email):
-    #authenticate
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         glr_names = mongo.db.users.find_one( { 'email': my_email }, { 'galleries.glr_name' :1 })
@@ -166,9 +178,13 @@ def get_all_galleries(my_email):
     return "Failure",400
 
 def add_gallery():
-    #authenticate
+
     req_body = request.get_json() 
     email, glr_name = req_body['my_email'], req_body['glr_name']
+
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(email,token):
+        return "Failed to authorize",400
 
     user = mongo.db.users.find_one({'email': email})
     if user:
@@ -180,7 +196,9 @@ def add_gallery():
     return "Failure",400
 
 def remove_gallery(my_email,glr_name):
-    #authenticate
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
@@ -195,6 +213,10 @@ def get_all_images():
     return "Success",200
 
 def get_image(email,glr_name,img_name):
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(email,token):
+        return "Failed to authorize",400
+        
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
     print(user)
     if user:
@@ -206,7 +228,7 @@ def get_image(email,glr_name,img_name):
                 else:
                     ss_uri = image['ss2_uri']
 
-                return ss_uri+"/api/image?img_id="+email+"."+image["access_token"],200           
+                return str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg",200           
         
 
     return "Failure",400
@@ -216,7 +238,11 @@ def add_image():
 
     my_email, glr_name = request.form['my_email'], request.form['glr_name']
     img_name, img = request.files['img'].filename,request.files['img']
-
+    img_name = request.form['img_name']
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+        
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
         if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):
@@ -224,25 +250,30 @@ def add_image():
 
         ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
         access_token = id_generator();
+
+        files = [0,0]
+        img.filename = my_email+"."+access_token
+        for i in range(2): 
+            URL = ss_uri[i] + "/api/image"
+            files[i] = {'img': (my_email+"."+access_token+".jpeg",img,'multipart/form-data',{'Expires': '0'})}
+            print(URL)
+            r = requests.post(URL,files = files[i]) 
+            print(img)
+            if not r.ok:
+                print(r)
+                return "Failure on SS",400
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
         { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
-
-        # files = [0,0]
-        # img.filename = my_email+"."+access_token
-        # for i in range(2): 
-        #     URL = ss_uri[i]+"/api/Image"
-        #     files[i] = {'img':img.read()}
-        #     r = requests.post(URL,files = files[i]) 
-        #     print(img)
-        #     if not r.ok:
-        #         print(r)
-        #         return "Failure on SS",400
 
         return"Succesfully addded Image",200 
         
     
 
 def remove_image(my_email,glr_name,img_name):
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        return "Failed to authorize",400
+        
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
 
     if user:
@@ -254,14 +285,15 @@ def remove_image(my_email,glr_name,img_name):
                 uri[0] = image['ss1_uri']
                 uri[1] = image['ss2_uri']
 
-        mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$pull': { 'galleries.$.Images': { "img_name":img_name }}})
+        
        
-        # for i in range(2): 
-        #     URL = uri[i]+"/api/Image?img_id=" + "my_email"+"."+access_token
-        #     r = requests.delete(URL) 
-        #     if not r.ok:
-        #         print(r)
-        #         return "Failure on SS",400
+        for i in range(2): 
+            URL = uri[i]+"/api/image?img_id=" + my_email+"."+access_token+".jpeg"
+            r = requests.delete(URL) 
+            if not r.ok:
+                print(r)
+                return "Failure on SS",400
+        mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$pull': { 'galleries.$.Images': { "img_name":img_name }}})
         return "Successfully deleted image",200
     return "Failure",400 
 
@@ -270,19 +302,20 @@ def get_comments():
     return "Success",200
 
 def add_comment(id):
-    req_body = request.get_json() 
-    email, glr_name = req_body['email'], req_body['glr_name']
-    img_name, comment = req_body['img_name'], req_body['comment']
-    user_name = req_body['user_name']
 
-    user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name,'galleries.Images.img_name':img_name})
-    print(user)
-    if user:
+    # req_body = request.get_json() 
+    # email, glr_name = req_body['email'], req_body['glr_name']
+    # img_name, comment = req_body['img_name'], req_body['comment']
+    # user_name = req_body['user_name']
 
-        comm_id = id_generator();
-        mongo.db.users.update( { 'email': email,'galleries.glr_name':glr_name,'galleries.Images.img_name':img_name }, 
-            { '$push':{ 'galleries.$[0].Images.$[1].Comments': { "commend_id": comm_id,"user": user_name,"comment":comment } } },
-        {arrayFilters: [ { "galleries.glr_name":glr_name }]})
+    # user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name,'galleries.Images.img_name':img_name})
+    # print(user)
+    # if user:
+
+    #     comm_id = id_generator();
+    #     mongo.db.users.update( { 'email': email,'galleries.glr_name':glr_name,'galleries.Images.img_name':img_name }, 
+    #         { '$push':{ 'galleries.$[0].Images.$[1].Comments': { "commend_id": comm_id,"user": user_name,"comment":comment } } },
+    #     {arrayFilters: [ { "galleries.glr_name":glr_name }]})
 
     return "Success",200
 

@@ -26,8 +26,8 @@ services:
    - DB=mongodb://mongodb_app_logic:27017/user_catalog
    - ZK=localhost:2181
    - AUTH_PORT= 4020
-   - SS1_URI = 'http://storage_service1:4030'
-   - SS2_URI = 'http://storage_service1:4031'
+   - SS1_URI = http://storage_service1:4030
+   - SS2_URI = http://storage_service2:4031
 
  auth_service:
   build: auth_service/
@@ -51,7 +51,19 @@ services:
   environment:
    - ENV=development
    - PORT=4030
-   - DB=mongodb://mongodb_storage_service1:27019/storage1
+   # - DB=mongodb://mongodb_storage_service1:27019/storage1
+   - ZK=localhost:2181
+
+ storage_service2:
+  build: storage_service/
+  ports:
+   - "4031:4031"
+  volumes:
+   - ./storage_service:/app
+  environment:
+   - ENV=development
+   - PORT=4031
+   # - DB=mongodb://mongodb_storage_service1:27019/storage1
    - ZK=localhost:2181
 
  mongodb_app_logic:
@@ -83,9 +95,6 @@ services:
   volumes:
    - ./data/ss1_db:/usr/data/db
   command: mongod --smallfiles --port 27019 --logpath=/dev/null # --quiet
-
-
-
-networks:
- default:
-  name: web_dev
+# networks:
+#  # default:
+#  #  name: web_dev

@@ -40,6 +40,7 @@ def add_image():
         print('No img part')
 
     img_file = request.files['img'] 
+    print(img_file)
     pathname = "/".join([img_dir, img_file.filename])
     img_file.save(pathname)
 

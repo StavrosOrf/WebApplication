@@ -4,4 +4,4 @@ WORKDIR /usr/src/app
 EXPOSE 4030
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-ENTRYPOINT ["python","index.py"]
+ENTRYPOINT ["python","-u","index.py"]
