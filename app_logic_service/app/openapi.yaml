@@ -557,15 +557,6 @@ components:
           schema:
             type: object
             properties:
-              email:
-                description: Email of user
-                type: string
-              glr_name:
-                description: Name of gallery containing image
-                type: string
-              img_name:
-                description: Name of image
-                type: string
               comment:
                 description: Comment string
                 type: string

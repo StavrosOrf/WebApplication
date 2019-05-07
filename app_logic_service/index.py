@@ -30,11 +30,10 @@ PORT = os.environ.get('PORT')
 AUTH_PORT = os.environ.get('AUTH_PORT')
 SS1_URI = os.environ.get('SS1_URI')
 SS2_URI = os.environ.get('SS2_URI')
-app.app.config['MONGO_URI'] = os.environ.get('DB')
-# app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
+#app.app.config['MONGO_URI'] = os.environ.get('DB')
+app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
 SS1_URI = "http://storage_service1:4030"
 SS2_URI = "http://storage_service2:4031"  
-print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
 #my_client = kz_client.KazooClient('ZK')
@@ -325,30 +324,46 @@ def remove_image(my_email,glr_name,img_name):
 
 
 def get_comments():
-    return "Success",200
+    req_body = request.get_json() 
+    email, glr_name = req_body['email'], req_body['glr_name']
+    img_name = req_body['img_name']
 
-def add_comment(id):
+    if not mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name,"galleries.Images.$.img_name":img_name}):
 
-    # req_body = request.get_json() 
-    # email, glr_name = req_body['email'], req_body['glr_name']
-    # img_name, comment = req_body['img_name'], req_body['comment']
-    # user_name = req_body['user_name']
+        comments = mongo.db.comments.find({'email':email,"glr_name":glr_name,"img_name":img_name})
+        comm_list = []
+        for comm in comments:
+            comm_list.append({"comment":comm['comment'],"user_name":comm['user_name'],"comm_id":comm['comm_id']})
+        return comm_list ,200
+    return "Failure",400 
 
-    # user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name,'galleries.Images.img_name':img_name})
-    # print(user)
-    # if user:
+def add_comment(id):# MAY NEED TO CHECK IF USER IS FRIEND
 
-    #     comm_id = id_generator();
-    #     mongo.db.users.update( { 'email': email,'galleries.glr_name':glr_name,'galleries.Images.img_name':img_name }, 
-    #         { '$push':{ 'galleries.$[0].Images.$[1].Comments': { "commend_id": comm_id,"user": user_name,"comment":comment } } },
-    #     {arrayFilters: [ { "galleries.glr_name":glr_name }]})
+    req_body = request.get_json() 
+    email, glr_name = req_body['email'], req_body['glr_name']
+    img_name, comment = req_body['img_name'], req_body['comment']
+    user_name = req_body['user_name']
 
-    return "Success",200
+    user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
+    print(user)
+    if user:
+        for image in user['galleries'][0]['Images']:
+        
+            if image['img_name'] == img_name:
+                comm_id = email +"."+id_generator()
+                mongo.db.comments.insert_one({'email':email,'comm_id': comm_id,"user_name":user_name,"glr_name":glr_name,"img_name":img_name,"comment" : comment})
+                return "Successfully added comment",200
+
+    return "Failed",400
 
 
 def remove_comment(id):
+    mongo.db.comments.remove( {"comm_id":id})
     return "Success",200
+
 def edit_comment(id):
+    comment = request.get_json()['comment']
+    mongo.db.comments.update( {"comm_id":id},{"$set":{"comment":comment}})
     return "Success",200
 
 #application = app.app
