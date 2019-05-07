@@ -82,7 +82,7 @@ def get_all_users(email):
     #mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     usr_list = []
     users = mongo.db.users.find()
@@ -103,7 +103,7 @@ def get_user(email):
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     token = request.headers['Authorization'].split()[1]
 
@@ -121,7 +121,7 @@ def get_all_friends():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
         
     user = mongo.db.users.find_one({'email': my_email})
     if user:
@@ -137,7 +137,7 @@ def add_friend():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
         
     user = mongo.db.users.find_one({'email': my_email})
     friend = mongo.db.users.find_one({'email': friend_email})
@@ -154,7 +154,7 @@ def add_friend():
 def remove_friend(my_email,friend_email):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
@@ -167,7 +167,7 @@ def remove_friend(my_email,friend_email):
 def get_all_galleries(my_email):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
@@ -184,7 +184,7 @@ def add_gallery():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     user = mongo.db.users.find_one({'email': email})
     if user:
@@ -198,7 +198,7 @@ def add_gallery():
 def remove_gallery(my_email,glr_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
@@ -210,12 +210,37 @@ def remove_gallery(my_email,glr_name):
 
 
 def get_all_images():
-    return "Success",200
+    req_body = request.get_json() 
+    email, glr_name = req_body['my_email'], req_body['glr_name']
+
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(email,token):
+        return "Failed to authorize",401
+
+    user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
+    print(user)
+    images = []
+    # ss_uri = "1"
+    if user:
+        for image in user['galleries'][0]['Images']:
+            if random.randint(1,2) == 1:
+                ss_uri = image['ss1_uri']
+            else:
+                ss_uri = image['ss2_uri']
+
+            ss_uri =  str(ss_uri).replace("storage_service1","localhost")
+            ss_uri =  str(ss_uri).replace("storage_service2","localhost") 
+            images.append(str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg"+" "+str(image['img_name']))
+                
+
+        return images,200 
+
+    return "Failure",400
 
 def get_image(email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
         
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
     print(user)
@@ -227,7 +252,8 @@ def get_image(email,glr_name,img_name):
                     ss_uri = image['ss1_uri']
                 else:
                     ss_uri = image['ss2_uri']
-
+                ss_uri =  ss_uri.replace("storage_service1","localhost")
+                ss_uri =  ss_uri.replace("storage_service2","localhost")    
                 return str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg",200           
         
 
@@ -241,11 +267,11 @@ def add_image():
     img_name = request.form['img_name']
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
-        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):
+        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.$.img_name":img_name}):
             return "Image name already exists",400
 
         ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
@@ -272,7 +298,7 @@ def add_image():
 def remove_image(my_email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",400
+        return "Failed to authorize",401
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
 
