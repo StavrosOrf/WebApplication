@@ -9,6 +9,7 @@ import connexion
 from connexion import NoContent
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -29,7 +30,8 @@ class JSONEncoder(json.JSONEncoder):
 
 app = connexion.App(__name__)
 app.add_api('openapi.yaml')
-
+cors = CORS(app.app)
+print(cors)
 
 # add mongo url to flask config, so that flask_pymongo can use it to make connection
 

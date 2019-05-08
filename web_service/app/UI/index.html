@@ -13,8 +13,10 @@
     $( "#tabs" ).tabs();
   } );
   </script>
+
 </head>
 <body>
+<div id="page_id">
 <div id="tabs">
   <ul>
     <li><a href="#tabs-1">Profile</a></li>
@@ -30,5 +32,83 @@
 <div align="right">
 	<p><a class="ui-button ui-widget ui-corner-all" href="#">Logout</a></p>
 </div>
+</div>
+<script>
+//sessionStorage.setItem("JWT", "123");
+
+/*var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4020/api/login",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "cache-control": "no-cache",
+    "Postman-Token": "235ecd83-38c3-46af-b358-c349ea33395a"
+  },
+  "processData": false,
+  "data": "{\n\t\"email\":\"agr\",\n\t\"password\":\"1\"\n}"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+});*/
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4000/test",
+  "method": "GET",
+  "headers": {
+    "cache-control": "no-cache",
+    "Postman-Token": "32cf15dc-ae6d-4670-b632-6dabd6f1221c"
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4020/api/login",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "cache-control": "no-cache",
+    "Postman-Token": "ba125ac9-01ac-4564-a713-172773298c49"
+  },
+  "processData": false,
+  "data": "{\n\t\"email\":\"agr\",\n\t\"password\":\"1\"\n}"
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+});
+
+/*const url='https://localhost:4000/test';
+header = "headers: {'Content-Type': 'application/json'}";
+
+const Http = new XMLHttpRequest();
+
+Http.open("POST", url,true);
+//Http.setRequestHeader("Content-Type","application/json")
+
+Http.send();
+Http.onreadystatechange=(e)=>{
+  console.log(Http.responseText)
+}*/
+
+var authenicated = true;
+
+if (authenicated == true){
+  document.getElementById("page_id").innerHTML = sessionStorage.getItem("JWT");
+}
+else{
+  sessionStorage.removeItem("JWT")
+  document.getElementById("page_id").style.visibility = "hidden"; 
+}
+ </script>
 </body>
 </html>

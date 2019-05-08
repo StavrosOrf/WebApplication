@@ -7,6 +7,7 @@ from flask import Flask
 from flask_pymongo import PyMongo
 import connexion
 from connexion import NoContent
+from flask_cors import CORS
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -25,6 +26,7 @@ class JSONEncoder(json.JSONEncoder):
 
 app = connexion.App(__name__)
 app.add_api('openapi.yaml')
+cors = CORS(app.app)
 
 
 

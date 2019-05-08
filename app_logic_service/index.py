@@ -23,15 +23,15 @@ from app import app
 
 # Create a logger object to log the info and debug
 #LOG = logger.get_root_logger(os.environ.get(
- #   'ROOT_LOGGER', 'root'), filename=os.path.join(ROOT_PATH, 'output.log'))
+#   'ROOT_LOGGER', 'root'), filename=os.path.join(ROOT_PATH, 'output.log'))
 
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 AUTH_PORT = os.environ.get('AUTH_PORT')
 SS1_URI = os.environ.get('SS1_URI')
 SS2_URI = os.environ.get('SS2_URI')
-#app.app.config['MONGO_URI'] = os.environ.get('DB')
-app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
+app.app.config['MONGO_URI'] = os.environ.get('DB')
+# app.app.config['MONGO_URI'] ="mongodb://localhost:27017/myDatabase"
 SS1_URI = "http://storage_service1:4030"
 SS2_URI = "http://storage_service2:4031"  
 mongo = PyMongo(app.app)
