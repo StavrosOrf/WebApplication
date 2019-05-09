@@ -85,16 +85,7 @@ services:
   volumes:
    - ./data/auth_db:/usr/data/db
   command: mongod --smallfiles --port 27018 --logpath=/dev/null # --quiet
- 
- mongodb_storage_service1:
-  image: mongo:latest
-  container_name: "mongodb_storage_service1"
-  environment:
-   - MONGO_DATA_DIR=/usr/data/db
-   - MONGO_LOG_DIR=/dev/null
-  volumes:
-   - ./data/ss1_db:/usr/data/db
-  command: mongod --smallfiles --port 27019 --logpath=/dev/null # --quiet
+
 # networks:
 #  # default:
 #  #  name: web_dev

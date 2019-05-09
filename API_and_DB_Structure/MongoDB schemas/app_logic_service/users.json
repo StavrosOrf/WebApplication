@@ -8,6 +8,11 @@
       "email": "string"
     }
   ],
+  "allowed_profiles": [
+    {
+      "email": "string"
+    }
+  ],
   
   "galleries": [
     {

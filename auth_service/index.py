@@ -123,8 +123,6 @@ def register():
 
 def authenticate(my_email):
     ''' auth request endpoint '''
-
-    print(request.headers)
     # Get token from "Authorization: Bearer <token>" part of header
     token = request.headers['Authorization'].split()[1]
     logged_in_user = mongo.db.logged_in_users.find_one({'email': my_email, 'token': token})

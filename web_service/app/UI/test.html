@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="index.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="index.js"></script>
+</head>
+<body> 
+<ul class="menu">
+
+      <li title="home"><a href="#" class="menu-button home">menu</a></li>
+      
+      <li title="search"><a href="#" class="search">search</a></li>
+      <li title="contact"><a href="#" class="contact">contact</a></li>
+    </ul>
+    
+    <ul class="menu-bar">
+        <li><a href="#" class="menu-button">Menu</a></li>
+        <li><a href="#" class="profile-button">Profile</a></li>
+        <li><a href="#" class="galleries-button">Galleries</a></li>
+        <li><a href="#" class="friends-button">Friends</a></li>
+    </ul>
+  <div align="center" id="content">
+    <h1>Welcome</h1>
+  </div>
+
+</body>
+<script type="text/javascript">
+
+  var target_email = "1";
+  var auth_token = "Bearer " +sessionStorage.getItem('token');
+  var url = "http://localhost:4010/api/users?email="+target_email;
+  
+  //AJAX CALL, GET ALL USERS 
+  
+    var settings = {
+    "async": true,
+    "crossDomain": true,
+    "url": url,
+    "method": "GET",
+    "headers": {
+      "Authorization": auth_token,
+    }
+  }
+  $.ajax(settings)
+  .done(function (response) {
+    console.log(response);
+  }).fail(function (response) {
+            var message= response['responseJSON']['message'];
+              if (message != null){
+                  console.log(message);
+              }else{
+                  console.log("Bad request");
+              }});
+  ;
+
+  //AJAX CALL, GET USER name
+
+  var target_email = "1";
+  var url = "http://localhost:4010/api/users/"+target_email;
+  var auth_token = "Bearer " +sessionStorage.getItem('token');
+
+  var settings = {
+    "async": true,
+    "crossDomain": true,
+    "url": url,
+    "method": "GET",
+    "headers": {
+      "Authorization": auth_token
+    }
+  }
+
+  $.ajax(settings)
+  .done(function (response) {
+      console.log(response);
+  }).fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+  });
+  ;
+
+/*  //AJAX CALL, ADD FRIEND
+  var my_email = "1";
+  var friend_email = "1com";
+  data = JSON.stringify({my_email:my_email,friend_email:friend_email});
+  console.log(data);
+  var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/friends/add",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token,
+  },
+  "data": data
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+  //AJAX CALL,  REMOVE FRIEND
+  var my_email = "1";
+  var friend_email = "1com";
+  data = JSON.stringify({my_email:my_email,friend_email:friend_email});
+  var url = "http://localhost:4010/api/friends/remove?my_email="+my_email+"&friend_email="+friend_email;
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": url,
+  "method": "DELETE",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token,
+
+  }
+}
+
+
+
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+ data = JSON.stringify({my_email:my_email});
+
+//AJAX CALL,  GETT ALL FRIENDS
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/friends",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "processData": false,
+  "data": data
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});*/
+
+//AJAX CALL,  GETT ALL GALLERIES
+
+/*my_email = "1";
+
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/galleries/"+my_email,
+  "method": "POST",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});*/
+
+/*//AJAX CALL,  ADD  GALLERY
+my_email = "1";
+glr_name = "glr1";
+data = JSON.stringify({my_email:my_email,glr_name:glr_name});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/galleries/add",
+  "method": "POST",
+  "headers": {
+     "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "data": data
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+
+//AJAX CALL,  REMOVE  GALLERY
+my_email = "1";
+glr_name = "glr2";
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/galleries/remove?my_email="+my_email + "&glr_name=" + glr_name,
+  "method": "DELETE",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+*/
+//AJAX CALL, GET ALL IMAGES OF A GALLERY
+
+/*my_email = "1";
+glr_name = "glr1";
+data = JSON.stringify({my_email:my_email,glr_name:glr_name});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/gallery/images",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "data": data
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+*/
+/*//AJAX CALL, ADD IMAGE TO A GALLERY
+
+my_email = "1";
+glr_name = "glr1";
+img_name = "123"
+
+var form = new FormData();
+form.append("my_email", my_email);
+form.append("glr_name", glr_name);
+form.append("img_name", img_name);
+form.append("img", "/home/stavros/Pictures/t1.jpeg");
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/image",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token 
+  },
+  "processData": false,
+  "contentType": false,
+  "mimeType": "multipart/form-data",
+  "data": form
+}
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+  console.log(response);
+  return;
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+//AJAX CALL, GET IMAGE 
+
+my_email = "1";
+glr_name = "glr1";
+img_name = "alaska.jpg"
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/image?email="+my_email+"&glr_name="+glr_name+"&img_name="+ img_name,
+  "method": "GET",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+//AJAX CALL, REMOVE IMAGE 
+
+my_email = "1";
+glr_name = "glr1";
+img_name = "alaska.jpg"
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/image?my_email="+my_email+"&glr_name="+glr_name+"&img_name="+ img_name,
+  "method": "DELETE",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});*/
+
+//AJAX CALL, GET COMMENTS OF IMAGE 
+/*
+my_email = "1";
+glr_name = "glr1";
+img_name = "alaska.jpg"
+data = JSON.stringify({email:my_email,glr_name:glr_name,img_name:img_name});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/image/comments/"+my_email,
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "processData": false,
+  "data": data
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+//AJAX CALL, ADD COMMENT TO AN IMAGE 
+
+my_email = "1";
+glr_name = "glr1";
+img_name = "alaska.jpg"
+var user_name = "TESTUSERNSME";
+var comment = "test comment";
+data = JSON.stringify({email:my_email,glr_name:glr_name,img_name:img_name,user_name:user_name,comment:comment});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/comments/"+my_email+"/new",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "data": data
+};
+
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+//AJAX CALL, REMOVE COMMENT 
+
+my_email = "1";
+var comm_id = "123";
+
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/comments/"+my_email+"/"+comm_id,
+  "method": "DELETE",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  }
+};
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+
+//AJAX CALL, PATCH COMMENT 
+
+my_email = "1";
+comm_id = "123";
+var comment = "TESTCOMENT";
+data = JSON.stringify({comment:comment});
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/comments/"+my_email+"/"+comm_id,
+  "method": "PATCH",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token
+  },
+  "data": data
+};
+
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});
+*/
+</script>
+</html>

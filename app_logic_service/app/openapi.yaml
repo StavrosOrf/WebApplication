@@ -101,6 +101,8 @@ paths:
                       type: string
                     email:
                       type: string
+                    allowed_profile_email:
+                      type: string
                       
   /friends/add:
     post:
@@ -324,7 +326,7 @@ paths:
         "200":
           description: Successfully removed image from user db object and     forwarded request for file removal
                     
-  /image/comments:
+  /image/comments/{my_email}:
     post:
       operationId: index.get_comments
       tags:
@@ -336,6 +338,12 @@ paths:
             []
       requestBody:
         $ref: "#/components/requestBodies/comments"
+      parameters:
+        - name: my_email
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: Successfully returned comments from user db object
@@ -352,7 +360,7 @@ paths:
                     comment:
                       type: string
                       
-  /comments/{id}:
+  /comments/{my_email}/{id}:
     post:
       operationId: index.add_comment
       tags:
@@ -364,6 +372,11 @@ paths:
             []
       parameters:
         - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: my_email
           in: path
           required: true
           schema:
@@ -384,6 +397,11 @@ paths:
         - jwt:
             []
       parameters:
+        - name: my_email
+          in: path
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           required: true
@@ -403,6 +421,11 @@ paths:
         - jwt:
             []
       parameters:
+        - name: my_email
+          in: path
+          required: true
+          schema:
+            type: string
         - name: id
           in: path
           required: true
