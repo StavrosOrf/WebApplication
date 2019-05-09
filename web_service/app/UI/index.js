@@ -1,18 +1,25 @@
-var email = "ckarageorgkaneen@gmail.com";//sessionStorage.getItem('my_email');
+var friends = get_friends();
 
-function get_user_name(){
-	// Ajax call
-	name = "";
-	return name;
+String.prototype.format = function() {
+  a = this;
+  for (k in arguments) {
+    a = a.replace("{" + k + "}", arguments[k])
+  }
+  return a
 }
 
-function make_pretty_profile_UI(name){
-	var mail_to_email = "mailto:" + email;
-	
-	return `<!DOCTYPE html>
+var profile_card_html = `<div class="card">
+  <img src="some_image.jpg" alt=" " style="width:100%">
+  <p class="title" style="color: grey;font-size: 30px;">{0}</p>
+	<a href={1}><i class="fa fa-envelope"></i></a> 
+	{2}
+  <p><button class="galleries-btn" onClick="render_galleries();">Galleries</button></p>
+</div>`;
+
+var profile_section_html = `<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 <style>
 .card {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
@@ -48,22 +55,40 @@ function make_pretty_profile_UI(name){
 </head>
 <body>
 
-<div class="card">
-  <img src="some_image.jpg" alt="Profile" style="width:100%">
-  <p class="title" style="color: grey;font-size: 30px;">${name}</p>
-  <div>
-	<a href=${mail_to_email}><i class="fa fa-envelope"></i></a> 
-    <a href="#"><i class="fa fa-twitter"></i></a>  
-    <a href="#"><i class="fa fa-linkedin"></i></a>   
-    <a href="#"><i class="fa fa-facebook"></i></a> 
-    <a href="#"><i class="fa fa-user-plus"></i></a> 
-  </div>
-  <p><button class="galleries-btn">Galleries</button></p>
-</div>
-
+{0}
 </body>
 </html>`;
 
+function get_my_email(){
+	my_email = "ckarageorgkaneen@gmail.com";//sessionStorage.getItem('my_email');
+	return my_email;
+}
+
+function get_user_name(email){
+	// Ajax call
+	name = "Christos KK";
+	return name;
+}
+
+function get_user(email){
+	name = get_user_name(email);
+	return {name: name, email: email};
+}
+
+function make_profile_card_html(user){
+	var is_user_added = true;
+	var name = user.name;
+	var email = user.email;
+	var mail_to_email = "mailto:" + email;
+	var friend_btn_html = is_user_added?
+		'<a href="#"><i class="fa fa-user-minus"></i></a>':
+		'<a href="#"><i class="fa fa-user-plus"></i></a>';
+	return profile_card_html.format(name, mail_to_email, friend_btn_html)
+}
+
+function render_profile_UI(user){
+	fd_profile_card_html = make_profile_card_html(user);
+	return profile_section_html.format(fd_profile_card_html);
 }
 
 function get_galleries(){
@@ -75,12 +100,41 @@ function make_pretty_galleries_UI(galleries){
 	return "Galleries";
 }
 
-function get_friends(){
-	// Ajax call
+function render_galleries(){
+	var galleries = get_galleries();
+  	var galleries_html = make_pretty_galleries_UI(galleries);
+	$("#content").html(galleries_html)
 }
 
-function make_pretty_friends_UI(friends){
-	return "Friends";
+function get_friends(){
+	// Ajax call
+	friends = [
+		{
+			name: "Kostas A",
+			email: "kostas@a.com"
+		},
+
+		{
+			name: "Elena B",
+			email: "elena@b.com"
+		},
+
+		{
+			name: "Kapoios Allos",
+			email: "kapoios@allos.com"
+		}
+	];
+
+	return friends;
+}
+
+function render_friends_UI(friends){
+	friend_profiles_html = '';
+	friends.forEach(function (friend) {
+    	friend_profiles_html += make_profile_card_html(friend);
+	});
+
+	return profile_section_html.format(friend_profiles_html);
 }
 
 $(document).ready(function(){
@@ -89,21 +143,19 @@ $(document).ready(function(){
 })
 
 $(".profile-button").click(function(){
-	var name = "Christos KK";//get_user_name();
-  	var profile_html = make_pretty_profile_UI(name);
-	$("#content").html(profile_html);
+	var my_email = get_my_email();
+	var my_user = get_user(my_email);
+  	var my_profile_UI_html = render_profile_UI(my_user);
+	$("#content").html(my_profile_UI_html);
 })
   
 $(".galleries-button").click(function(){
-	var galleries = get_galleries();
-  	var galleries_html = make_pretty_galleries_UI(galleries);
-	$("#content").html(galleries_html)
+	render_galleries();
 })
 
-$(".friends-button").click(function(){
-    var friends = get_friends();
-	var friends_html = make_pretty_friends_UI(friends);
-	$("#content").html(friends_html)
+$(".friends-button").click(function(){ 
+	var friends_UI_html = render_friends_UI(friends);
+	$("#content").html(friends_UI_html);
 })
   
 })
