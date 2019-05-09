@@ -34,23 +34,68 @@
 </head>
 <body>
 <div class="login-form">
-    <form action="/examples/actions/confirmation.php" method="post">
+    <!-- <form action="/examples/actions/confirmation.php" method="post"> -->
         <h2 class="text-center">Log in</h2>       
         <div class="form-group">
-            <input type="text" class="form-control" placeholder="Username" required="required">
+            <input id="email" type="text" class="form-control" placeholder="E-mail" required="required">
         </div>
         <div class="form-group">
-            <input type="password" class="form-control" placeholder="Password" required="required">
+            <input id="pass" type="password" class="form-control" placeholder="Password" required="required">
         </div>
         <div class="form-group">
-            <button type="submit" class="btn btn-primary btn-block">Log in</button>
+            <button id="login_button"type="submit" class="btn btn-primary btn-block">Log in</button>
         </div>
         <div class="clearfix">
             <label class="pull-left checkbox-inline"><input type="checkbox"> Remember me</label>
-            <a href="#" class="pull-right">Forgot Password?</a>
+            <!-- <a href="#" class="pull-right">Forgot Password?</a> -->
         </div>        
-    </form>
-    <p class="text-center"><a href="#">Create an Account</a></p>
+    <!-- </form> -->
+    <p class="text-center"><a href="http://localhost:4000/register">Create an Account</a></p>
 </div>
 </body>
+
+<script type="text/javascript">
+
+    var email;
+    var password;
+    
+    $('#login_button').click(function() {
+        email = document.getElementById("email").value ;
+        document.getElementById("pass").type = 'text';
+        password = document.getElementById("pass").value ;
+        var data = JSON.stringify({email:email,password:password});
+        document.getElementById("pass").type = 'password';
+        console.log(data);
+
+/*        var data = JSON.stringify({
+    "email":"agr",
+    "password":"1"
+});*/
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": "http://localhost:4020/api/login",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+          },
+          "processData": false,
+          "data": data 
+        };
+
+        $.ajax(settings)
+        .done(function (response) {
+            sessionStorage.setItem('my_email',email);
+            sessionStorage.setItem('token',response['token']);
+            alert("Succedfully Logged In!!!");
+            window.location.href = "http://localhost:4000";
+        }).fail(function (response) {
+          var message= response['responseJSON']['message'];
+            if (message != null){
+                alert(message);
+            }else{
+                alert("Bad request");
+            }});
+    });
+</script>
 </html>                                		                            
