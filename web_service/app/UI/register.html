@@ -34,24 +34,68 @@
 </head>
 <body>
 <div class="login-form">
-    <form action="/examples/actions/confirmation.php" method="post">
+    <!-- <form action="/examples/actions/confirmation.php" method="post"> -->
         <h2 class="text-center">Register</h2>       
         <div class="form-group">
-            <input type="text" class="form-control" placeholder="Name" required="required">
+            <input id="name" type="text" class="form-control" placeholder="Name" required="required">
         </div>
 		<div class="form-group">
-            <input type="text" class="form-control" placeholder="Email" required="required">
+            <input id="email" type="text" class="form-control" placeholder="Email" required="required">
         </div>
         <div class="form-group">
-            <input type="password" class="form-control" placeholder="Password" required="required">
+            <input id="pass" type="password" class="form-control" placeholder="Password" required="required">
         </div>
         <div class="form-group">
-            <button type="submit" class="btn btn-primary btn-block">Register</button>
+            <button id="reg_button" type="submit" class="btn btn-primary btn-block">Register</button>
         </div>
 		<div>
-            <a href="#" class="pull-right">Already a user?</a>
+            <a href="http://localhost:4000/login" class="pull-right">Already a user?</a>
         </div>
-    </form>
+<!--     </form> -->
 </div>
+<script type="text/javascript">
+    
+
+    var email,name;
+    var password;
+
+     $('#reg_button').click(function() {
+        console.log(sessionStorage.getItem('email'));
+        console.log(sessionStorage.getItem('token'));
+
+        name = document.getElementById("name").value ;
+        email = document.getElementById("email").value ;
+        document.getElementById("pass").type = 'text';
+        password = document.getElementById("pass").value ;
+        var data = JSON.stringify({name:name ,email:email,password:password});
+        document.getElementById("pass").type = 'password';
+        
+
+        var settings = {
+          "async": true,
+          "crossDomain": true,
+          "url": "http://localhost:4020/api/register",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+          },
+          "processData": false,
+          "data": data
+        }
+
+        $.ajax(settings)
+        .done(function (response) {
+          alert("Succedfully Registered!!!");
+          window.location.href = "http://localhost:4000/login";
+        }).fail(function (response) {
+          var message= response['responseJSON']['message'];
+          if (message != null){
+            alert(message);
+          }else{
+            alert("Bad request");
+          }
+         });
+    });
+</script>
 </body>
 </html>                                		                            

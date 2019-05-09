@@ -31,7 +31,7 @@ class JSONEncoder(json.JSONEncoder):
 app = connexion.App(__name__)
 app.add_api('openapi.yaml')
 cors = CORS(app.app)
-print(cors)
+
 
 # add mongo url to flask config, so that flask_pymongo can use it to make connection
 

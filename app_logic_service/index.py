@@ -81,13 +81,17 @@ def get_all_users(email):
     #mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     usr_list = []
     users = mongo.db.users.find()
     for usr in users:
         usr_list.append(usr['email']+" "+ usr['name'])
-    return usr_list,200
+    resp = jsonify(usr_list)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 200  
 
 def add_user():
 
@@ -96,22 +100,29 @@ def add_user():
     print(req_body)
     mongo.db.users.insert_one({'email': email,"name":name,"friends" : [],"galleries" : []})
 
-    return "Succesfully created User",200 
+    return "Succesfully created User",200
+
 
 def get_user(email):
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     token = request.headers['Authorization'].split()[1]
 
     user = mongo.db.users.find_one({'email': email})
 
     if user:
-        return jsonify({"name":user['name'],"email":user['email']}),200
+        resp = jsonify({"name":user['name'],"email":user['email']})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200  
     else:
-        return "User not found",400
+        resp = jsonify({'message':"User not found"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 400
 
 def get_all_friends():
 
@@ -120,15 +131,21 @@ def get_all_friends():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
         
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         friends = mongo.db.users.find_one( { 'email': my_email }, { 'friends' :1 })
        # print(glr_names['galleries'][1]['glr_name']) # a way to access glr names
-        return friends,200 
+        resp = jsonify(friends)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def add_friend():
     req_body = request.get_json() 
@@ -136,7 +153,9 @@ def add_friend():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
         
     user = mongo.db.users.find_one({'email': my_email})
     friend = mongo.db.users.find_one({'email': friend_email})
@@ -144,37 +163,52 @@ def add_friend():
         friend_name = friend['name']
         mongo.db.users.update( { 'email': my_email }, { '$push': { 'friends': { "email":friend_email,"name":friend_name } } })
 
-        return"Succesfully addded Friend",200 
-
-    return "Failure",400
-
+        resp = jsonify({'message': "Succesfully addded Friend"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200  
+   
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400  
 
     return "Success",200
 def remove_friend(my_email,friend_email):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         mongo.db.users.update( { 'email': my_email }, { '$pull': { 'friends': { "email":friend_email } } })
 
-        return"Succesfully removed Friend",200 
+        resp = jsonify({'message': "Succesfully removed friend"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def get_all_galleries(my_email):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         glr_names = mongo.db.users.find_one( { 'email': my_email }, { 'galleries.glr_name' :1 })
        # print(glr_names['galleries'][1]['glr_name']) # a way to access glr names
-        return glr_names,200 
+        resp = jsonify(glr_names)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def add_gallery():
 
@@ -183,29 +217,46 @@ def add_gallery():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     user = mongo.db.users.find_one({'email': email})
     if user:
         user = mongo.db.users.find_one({'email': email,"galleries.glr_name":glr_name})
         if not user:
             mongo.db.users.update( { 'email': email }, { '$push': { 'galleries': { "glr_name":glr_name,"Images":[] } } })
-            return"Succesfully addded Gallery",200 
-        return "Failure,gallery already exists",400
-    return "Failure",400
+
+            resp = jsonify({'message': "Succesfully addded Gallery"})
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            return resp, 200
+
+        resp = jsonify({'message': "Failure,gallery already exists"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 400
+
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def remove_gallery(my_email,glr_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
         mongo.db.users.update( { 'email': my_email }, { '$pull': { 'galleries': { "glr_name":glr_name} } })
 
-        return"Succesfully removed Gallery",200 
+        resp = jsonify({'message': "Succesfully removed Gallery"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200 
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 
 def get_all_images():
@@ -214,7 +265,9 @@ def get_all_images():
 
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
     print(user)
@@ -232,14 +285,20 @@ def get_all_images():
             images.append(str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg"+" "+str(image['img_name']))
                 
 
-        return images,200 
+        resp = jsonify(images)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200 
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def get_image(email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
         
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
     print(user)
@@ -253,10 +312,15 @@ def get_image(email,glr_name,img_name):
                     ss_uri = image['ss2_uri']
                 ss_uri =  ss_uri.replace("storage_service1","localhost")
                 ss_uri =  ss_uri.replace("storage_service2","localhost")    
-                return str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg",200           
+
+                resp = jsonify(string(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg")
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp, 200            
         
 
-    return "Failure",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
     
 
 def add_image():
@@ -266,12 +330,16 @@ def add_image():
     img_name = request.form['img_name']
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
         if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.$.img_name":img_name}):
-            return "Image name already exists",400
+            resp = jsonify({'message': "Image name already exists!"})
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            return resp, 400
 
         ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
         access_token = id_generator();
@@ -286,18 +354,27 @@ def add_image():
             print(img)
             if not r.ok:
                 print(r)
-                return "Failure on SS",400
+                resp = jsonify({'message': "Failure"})
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp, 400
+
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
         { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
 
-        return"Succesfully addded Image",200 
+        resp = jsonify({'message': "Succesfully added Image"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
         
-    
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400
 
 def remove_image(my_email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
     if not authenticate(my_email,token):
-        return "Failed to authorize",401
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
 
@@ -317,13 +394,27 @@ def remove_image(my_email,glr_name,img_name):
             r = requests.delete(URL) 
             if not r.ok:
                 print(r)
-                return "Failure on SS",400
+                resp = jsonify({'message': "Failure"})
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp, 400
+
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$pull': { 'galleries.$.Images': { "img_name":img_name }}})
-        return "Successfully deleted image",200
-    return "Failure",400 
+        resp = jsonify({'message': "Succesfully deleted Image"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
+
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400 
 
 
 def get_comments():
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
+
     req_body = request.get_json() 
     email, glr_name = req_body['email'], req_body['glr_name']
     img_name = req_body['img_name']
@@ -334,10 +425,20 @@ def get_comments():
         comm_list = []
         for comm in comments:
             comm_list.append({"comment":comm['comment'],"user_name":comm['user_name'],"comm_id":comm['comm_id']})
-        return comm_list ,200
-    return "Failure",400 
+        resp = jsonify(comm_list)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 200
+
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400 
 
 def add_comment(id):# MAY NEED TO CHECK IF USER IS FRIEND
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
 
     req_body = request.get_json() 
     email, glr_name = req_body['email'], req_body['glr_name']
@@ -352,19 +453,41 @@ def add_comment(id):# MAY NEED TO CHECK IF USER IS FRIEND
             if image['img_name'] == img_name:
                 comm_id = email +"."+id_generator()
                 mongo.db.comments.insert_one({'email':email,'comm_id': comm_id,"user_name":user_name,"glr_name":glr_name,"img_name":img_name,"comment" : comment})
-                return "Successfully added comment",200
+                resp = jsonify({'message': "Succesfully added Comment"})
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp, 200
 
-    return "Failed",400
+    resp = jsonify({'message': "Failure"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 400 
 
 
 def remove_comment(id):
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
+
     mongo.db.comments.remove( {"comm_id":id})
-    return "Success",200
+
+    resp = jsonify({'message': "Success"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 200
 
 def edit_comment(id):
+    token = request.headers['Authorization'].split()[1]
+    if not authenticate(my_email,token):
+        resp = jsonify({'message': "Failed to authorize"})
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp, 401
+
     comment = request.get_json()['comment']
     mongo.db.comments.update( {"comm_id":id},{"$set":{"comment":comment}})
-    return "Success",200
+    
+    resp = jsonify({'message': "Success"})
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp, 200
 
 #application = app.app
 if __name__ == '__main__':
