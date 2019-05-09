@@ -1,114 +1,32 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Web App</title>
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <link rel="stylesheet" href="/resources/demos/style.css">
-  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <script>
-  $( function() {
-    $( "#tabs" ).tabs();
-  } );
-  </script>
 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="index.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<script src="index.js"></script>
 </head>
-<body>
-<div id="page_id">
-<div id="tabs">
-  <ul>
-    <li><a href="#tabs-1">Profile</a></li>
-    <li><a href="#tabs-2">Friends</a></li>
-  </ul>
-  <div id="tabs-1">
-    <p>Proin elit arcu, rutrum commodo, vehicula tempus, commodo a, risus. Curabitur nec arcu. Donec sollicitudin mi sit amet mauris. Nam elementum quam ullamcorper ante. Etiam aliquet massa et lorem. Mauris dapibus lacus auctor risus. Aenean tempor ullamcorper leo. Vivamus sed magna quis ligula eleifend adipiscing. Duis orci. Aliquam sodales tortor vitae ipsum. Aliquam nulla. Duis aliquam molestie erat. Ut et mauris vel pede varius sollicitudin. Sed ut dolor nec orci tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+<body> 
+<ul class="menu">
+
+      <li title="home"><a href="#" class="menu-button home">menu</a></li>
+      
+      <li title="search"><a href="#" class="search">search</a></li>
+      <li title="contact"><a href="#" class="contact">contact</a></li>
+    </ul>
+    
+    <ul class="menu-bar">
+        <li><a href="#" class="menu-button">Menu</a></li>
+        <li><a href="#" class="profile-button">Profile</a></li>
+        <li><a href="#" class="galleries-button">Galleries</a></li>
+        <li><a href="#" class="friends-button">Friends</a></li>
+    </ul>
+  <div align="center" id="content">
+    <h1>Welcome</h1>
   </div>
-  <div id="tabs-2">
-    <p>Morbi tincidunt, dui sit amet facilisis feugiat, odio metus gravida ante, ut pharetra massa metus id nunc. Duis scelerisque molestie turpis. Sed fringilla, massa eget luctus malesuada, metus eros molestie lectus, ut tempus eros massa ut dolor. Aenean aliquet fringilla sem. Suspendisse sed ligula in ligula suscipit aliquam. Praesent in eros vestibulum mi adipiscing adipiscing. Morbi facilisis. Curabitur ornare consequat nunc. Aenean vel metus. Ut posuere viverra nulla. Aliquam erat volutpat. Pellentesque convallis. Maecenas feugiat, tellus pellentesque pretium posuere, felis lorem euismod felis, eu ornare leo nisi vel felis. Mauris consectetur tortor et purus.</p>
-  </div>
-</div>
-<div align="right">
-	<p><a class="ui-button ui-widget ui-corner-all" href="#">Logout</a></p>
-</div>
-</div>
-<script>
-//sessionStorage.setItem("JWT", "123");
 
-/*var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:4020/api/login",
-  "method": "POST",
-  "headers": {
-    "Content-Type": "application/json",
-    "cache-control": "no-cache",
-    "Postman-Token": "235ecd83-38c3-46af-b358-c349ea33395a"
-  },
-  "processData": false,
-  "data": "{\n\t\"email\":\"agr\",\n\t\"password\":\"1\"\n}"
-}
-
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});*/
-
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:4000/test",
-  "method": "GET",
-  "headers": {
-    "cache-control": "no-cache",
-    "Postman-Token": "32cf15dc-ae6d-4670-b632-6dabd6f1221c"
-  }
-}
-
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});
-
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:4020/api/login",
-  "method": "POST",
-  "headers": {
-    "Content-Type": "application/json",
-    "cache-control": "no-cache",
-    "Postman-Token": "ba125ac9-01ac-4564-a713-172773298c49"
-  },
-  "processData": false,
-  "data": "{\n\t\"email\":\"agr\",\n\t\"password\":\"1\"\n}"
-}
-
-$.ajax(settings).done(function (response) {
-  console.log(response);
-});
-
-/*const url='https://localhost:4000/test';
-header = "headers: {'Content-Type': 'application/json'}";
-
-const Http = new XMLHttpRequest();
-
-Http.open("POST", url,true);
-//Http.setRequestHeader("Content-Type","application/json")
-
-Http.send();
-Http.onreadystatechange=(e)=>{
-  console.log(Http.responseText)
-}*/
-
-var authenicated = true;
-
-if (authenicated == true){
-  document.getElementById("page_id").innerHTML = sessionStorage.getItem("JWT");
-}
-else{
-  sessionStorage.removeItem("JWT")
-  document.getElementById("page_id").style.visibility = "hidden"; 
-}
- </script>
 </body>
 </html>
+
