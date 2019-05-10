@@ -1,5 +1,5 @@
 function get_my_email(){
-	my_email = "ckarageorgkaneen@gmail.com";//sessionStorage.getItem('my_email');
+	my_email = "1";//localStorage.getItem('my_email');
 	return my_email;
 }
 
@@ -15,25 +15,36 @@ function get_user(email){
 }
 
 function get_friends(){
-	// Ajax call
-	friends = [
-		{
-			name: "Kostas A",
-			email: "kostas@a.com"
-		},
 
-		{
-			name: "Elena B",
-			email: "elena@b.com"
-		},
+  	var data = JSON.stringify({my_email:get_my_email()});
+	//AJAX CALL,  GETT ALL FRIENDS
+	var settings = {
+	  "async": true,
+	  "crossDomain": true,
+	  "url": "http://localhost:4010/api/friends",
+	  "method": "POST",
+	  "headers": {
+	    "Content-Type": "application/json",
+	    "Authorization": auth_token
+	  },
+	  "processData": false,
+	  "data": data
+	};
 
-		{
-			name: "Kapoios Allos",
-			email: "kapoios@allos.com"
-		}
-	];
+	$.ajax(settings).done(function (response) {
+	  console.log(response);
+	  my_friends = response['friends'];
+	})
+	.fail(function (response) {
+	      var message= response['responseJSON']['message'];
+	        if (message != null){
+	            console.log(message);
+	        }else{
+	            console.log("Bad request");
+	        }
+	});
 
-	return friends;
+	return my_friends;
 }
 
 function get_galleries(email){
@@ -52,6 +63,9 @@ function get_galleries(email){
 
 	return images;
 }
+var my_email = localStorage.getItem('my_email');
+var target_email = "1";
+var auth_token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXNzd29yZCI6IjEiLCJlbWFpbCI6IjEifQ.0KD7aL3DNXPLYV2KOFhCkE59m7V3rBrM-pJFaVPy8k4";//"Bearer " +localStorage.getItem('token');
 
 var my_email = get_my_email();	
 var my_user = get_user(my_email);
@@ -213,6 +227,44 @@ $(".galleries-button").click(function(){
 $(".friends-button").click(function(){ 
 	var my_friends_UI_html = render_my_friends_UI();
 	$("#content").html(my_friends_UI_html);
+})
+
+
+$(".logout").click(function(){ 
+  var my_email = localStorage.getItem('my_email');
+  var auth_token = "Bearer " +localStorage.getItem('token');
+  //AJAX CALL, TO LOGOUT USER 
+
+  var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4020/api/logout/"+my_email,
+  "method": "GET",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings).done(function (response) {
+  console.log(response);
+  localStorage.removeItem('token');
+  localStorage.removeItem('my_email');
+  alert("Succesfully logged out");
+  window.location.href = "http://localhost:4000/login";
+})
+.fail(function (response) {
+      $("#body").hide();
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            alert(message);
+        }else{
+            console.log("Bad request");
+        }
+        localStorage.removeItem('token');
+  		localStorage.removeItem('my_email');
+        window.location.href = "http://localhost:4000/login";
+});;
+
 })
   
 })

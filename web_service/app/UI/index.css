@@ -53,6 +53,9 @@
 .menu li a.home:before {
   content: "\f039";
 }
+.menu li a.logout:before {
+  content: "\f2f5";
+}
 .menu-bar li a:hover,
 .menu li a:hover,
 .menu li:first-child a {

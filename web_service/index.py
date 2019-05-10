@@ -32,7 +32,8 @@ if app:
 def not_found(error):
     """ error handler """
     #LOG.error(error)
-    return make_response(jsonify({'error': 'Not found'}), 404)
+    #return make_response(jsonify({'error': 'Not found'}), 404)
+    return send_from_directory('UI', '404.html')
 
 def authenticate(my_email, token):
     URL = "http://auth_service:4020/api/authenticate/"
@@ -48,14 +49,7 @@ def authenticate(my_email, token):
 @app.route('/')
 def serve_home():
     """ static files serve """
-    # if 'Email' in request.headers and 'Authorization' in request.headers:
-    #     my_email = request.headers['Email']
-    #     token = request.headers['Authorization'].split()[1];
-    #     token_is_valid = authenticate(my_email, token)
-    #     if (not token) or (not token_is_valid):
-    #         return send_from_directory('UI', 'login.html')
-    #     elif token_is_valid:
-    #         return send_from_directory('UI', 'index.html')
+
     return send_from_directory('UI', 'index.html')
 
 @app.route('/login')
@@ -68,6 +62,20 @@ def serve_register():
     """ static files serve """
     return send_from_directory('UI','register.html')
 
+@app.route('/index.css')
+def serve_index_css():
+    """ static files serve """
+    return send_from_directory('UI','index.css')
+
+@app.route('/index.js')
+def serve_index_js():
+    """ static files serve """
+    return send_from_directory('UI','index.js')
+@app.route('/favicon.ico')
+def serve_favicon():
+    """ static files serve """
+    return send_file('./UI/favicon.ico')
+
 @app.route('/<path:path>')
 def static_proxy(path):
     """ static folder serve """
@@ -77,7 +85,7 @@ def static_proxy(path):
 
 @app.route('/test')
 def test():
-    return "TEst succeded",200
+    return send_from_directory('UI','test.html')
 
 if __name__ == '__main__':
     #LOG.info('running environment: %s', os.environ.get('ENV'))

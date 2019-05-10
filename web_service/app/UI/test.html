@@ -6,9 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="index.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-<script src="index.js"></script>
+<script type="text/javascript" src="index.js"></script>
+
 </head>
-<body> 
+<body id="body"> 
 <ul class="menu">
 
       <li title="home"><a href="#" class="menu-button home">menu</a></li>
@@ -30,12 +31,43 @@
 </body>
 <script type="text/javascript">
 
-  var target_email = "1";
-  var auth_token = "Bearer " +sessionStorage.getItem('token');
-  var url = "http://localhost:4010/api/users?email="+target_email;
+var my_email = localStorage.getItem('my_email');
+var target_email = "1";
+var auth_token = "Bearer " +localStorage.getItem('token');
+console.log(my_email);
+console.log(auth_token);
+
+//AJAX CALL, TO AUTHENTICATE USER 
+/*
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4020/api/authenticate/"+my_email,
+  "method": "GET",
+  "headers": {
+    "Authorization": auth_token
+  }
+}
+
+$.ajax(settings)
+.done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+      $("#body").hide();
+      var message= response['responseJSON']['message'];
+        if (message != null){
+            alert(message);
+        }else{
+            console.log("Bad request");
+        }
+        window.location.href = "http://localhost:4000/login";
+});;
+
+  
   
   //AJAX CALL, GET ALL USERS 
-  
+  var url = "http://localhost:4010/api/users?email="+target_email;
     var settings = {
     "async": true,
     "crossDomain": true,
@@ -61,7 +93,7 @@
 
   var target_email = "1";
   var url = "http://localhost:4010/api/users/"+target_email;
-  var auth_token = "Bearer " +sessionStorage.getItem('token');
+  var auth_token = "Bearer " +localStorage.getItem('token');
 
   var settings = {
     "async": true,
@@ -84,7 +116,9 @@
             console.log("Bad request");
         }
   });
-  ;
+  ;*/
+
+
 
 /*  //AJAX CALL, ADD FRIEND
   var my_email = "1";
@@ -132,9 +166,6 @@ var settings = {
 
   }
 }
-
-
-
 
 $.ajax(settings).done(function (response) {
   console.log(response);

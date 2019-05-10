@@ -54,7 +54,38 @@
 <!--     </form> -->
 </div>
 <script type="text/javascript">
-    
+  var my_email = localStorage.getItem('my_email');
+  var auth_token = "Bearer " +localStorage.getItem('token');
+  console.log(my_email);
+  console.log(auth_token);
+
+//AJAX CALL, TO AUTHENTICATE USER 
+
+    var settings = {
+      "async": true,
+      "crossDomain": true,
+      "url": "http://localhost:4020/api/authenticate/"+my_email,
+      "method": "GET",
+      "headers": {
+        "Authorization": auth_token
+      }
+    }
+
+    $.ajax(settings)
+    .done(function (response) {
+      console.log(response);
+      alert("User already logged in!!")
+      window.location.href = "http://localhost:4000";
+    })
+    .fail(function (response) {
+          $("#body").hide();
+          var message= response['responseJSON']['message'];
+            if (message != null){
+                console.log(message);
+            }else{
+                console.log("intended,'Bad request");
+            }
+    });;
 
     var email,name;
     var password;

@@ -83,7 +83,7 @@ def login():
 def logout(my_email):
     ''' logout user endpoint '''
     token = request.headers['Authorization'].split()[1]
-    db_response = mongo.db.logged_in_users.deleteMany({'email': my_email, 'token': token})
+    db_response = mongo.db.logged_in_users.delete_one({'email': my_email, 'token': token})
     if db_response.deleted_count == 1:
         resp = jsonify({'message': "Successfully logged out"})
         resp.headers['Access-Control-Allow-Origin'] = '*'
