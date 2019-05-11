@@ -337,7 +337,8 @@ def add_image():
     my_email, glr_name = request.form['my_email'], request.form['glr_name']
     img_name, img = request.files['img'].filename,request.files['img']
     img_name = request.form['img_name']
-    token = request.headers['Authorization'].split()[1]
+
+    token = request.form['token'].split()[1]
     if not authenticate(my_email,token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -353,12 +354,14 @@ def add_image():
         ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
         access_token = id_generator();
 
+        images = [img,img]
         files = [0,0]
         img.filename = my_email+"."+access_token
-        for i in range(2): 
+        for i in reversed(range(2)): 
             URL = ss_uri[i] + "/api/image"
-            files[i] = {'img': (my_email+"."+access_token+".jpeg",img,'multipart/form-data',{'Expires': '0'})}
+            files[i] = {'img': (my_email+"."+access_token+".jpeg",images[i],'multipart/form-data',{'Expires': '0'})}
             # print(URL)
+
             r = requests.post(URL,files = files[i]) 
             # print(img)
             if not r.ok:

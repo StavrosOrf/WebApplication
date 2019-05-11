@@ -54,7 +54,7 @@
   content: "\f039";
 }
 .menu li a.logout:before {
-  content: "\f2f5";
+  content: "\f039";/*"\f2f5";*/
 }
 .menu-bar li a:hover,
 .menu li a:hover,

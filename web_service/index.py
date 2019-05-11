@@ -2,7 +2,7 @@
 import os
 import sys
 import requests
-from flask import jsonify, request, make_response, send_from_directory
+from flask import jsonify, request, make_response, send_from_directory,send_file
 from kazoo import client as kz_client
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))

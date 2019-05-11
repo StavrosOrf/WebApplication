@@ -32,7 +32,7 @@ function get_friends(){
 	};
 
 	$.ajax(settings).done(function (response) {
-	  console.log(response);
+	  //console.log(response);
 	  my_friends = response['friends'];
 	})
 	.fail(function (response) {

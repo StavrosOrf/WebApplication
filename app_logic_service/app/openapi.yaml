@@ -287,9 +287,9 @@ paths:
         - Image
       summary: Add an image
       description: Add an image to a user gallery [Add]
-      security:
-        - jwt:
-            []
+      # security:
+      #   - jwt:
+      #       []
       requestBody:
         $ref: "#/components/requestBodies/add_image"
       responses:
@@ -532,6 +532,8 @@ components:
             type: object
             properties:
               my_email:
+                type: string
+              token:
                 type: string
               glr_name:
                 type: string

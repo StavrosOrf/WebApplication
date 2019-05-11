@@ -9,13 +9,33 @@
 <script type="text/javascript" src="index.js"></script>
 
 </head>
-<body id="body"> 
+<body id="body" background="favicon.ico"> 
+
+
+ 
 <ul class="menu">
 
       <li title="home"><a href="#" class="menu-button home">menu</a></li>
       
       <li title="search"><a href="#" class="search">search</a></li>
       <li title="contact"><a href="#" class="contact">contact</a></li>
+
+<!-- SUBMIT IMAGE ELEMENT -->
+  <form action="http://localhost:4010/api/image#res.redirect" method="POST" enctype="multipart/form-data" target="formSend">
+    Image name:
+    <input id="token" type="text" name="token" value="" hidden>
+    <input id="my_email" type="text" name="my_email" value="" hidden>
+    <input id="glr_name" type="text" name="glr_name" value="" hidden>
+    <input type="text" name="img_name" value="" placeholder="Image name" required>
+    <input id="file" type="file" name="img" accept="image/*" required>
+    <br><br>
+    <div>
+      <input id="upload_button" type="submit" value="Submit">
+      <iframe id="frame" name="formSend" height="25px"></iframe>  
+    </div>
+    
+  </form>
+<!--///////////////////////////////////////////// -->
     </ul>
     
     <ul class="menu-bar">
@@ -31,11 +51,69 @@
 </body>
 <script type="text/javascript">
 
-var my_email = localStorage.getItem('my_email');
+var my_email = '1'; localStorage.getItem('my_email');
 var target_email = "1";
-var auth_token = "Bearer " +localStorage.getItem('token');
+var auth_token = "Bearer " +"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXNzd29yZCI6IjEiLCJlbWFpbCI6IjEifQ.0KD7aL3DNXPLYV2KOFhCkE59m7V3rBrM-pJFaVPy8k4";//localStorage.getItem('token');
 console.log(my_email);
 console.log(auth_token);
+
+my_email = "1";
+glr_name = "glr1";
+
+document.getElementById("my_email").value = my_email;
+document.getElementById("glr_name").value = glr_name;
+document.getElementById("token").value = auth_token;
+console.log(document.getElementById("file"));
+//ADD IMAGE TO A GALLERY 
+
+document.getElementById("frame").style.visibility = "hidden";
+$('#upload_button').click(function() {
+  document.getElementById("frame").style.visibility = "visible";
+  setTimeout(timer,3000);
+  
+  console.log("test");
+});
+function timer(){
+    document.getElementById("frame").style.visibility = "hidden";
+}
+/*
+
+var form = new FormData();
+form.append("my_email", my_email);
+form.append("glr_name", glr_name);
+form.append("img_name", img_name);
+
+console.log(file['value']);
+form.append("img", "//home/stavros/Pictures/alaska.jpg");
+
+console.log(form);
+
+var settings = {
+  "async": true,
+  "crossDomain": true,
+  "url": "http://localhost:4010/api/image",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": auth_token 
+  },
+  "processData": false,
+  "contentType": false,
+  "mimeType": "multipart/form-data",
+  "data": form
+}
+$.ajax(settings).done(function (response) {
+  console.log(response);
+})
+.fail(function (response) {
+  console.log(response);
+      var message = null;//var message= response['responseJSON']['message'];
+        if (message != null){
+            console.log(message);
+        }else{
+            console.log("Bad request");
+        }
+});*/
 
 //AJAX CALL, TO AUTHENTICATE USER 
 /*
@@ -319,48 +397,10 @@ $.ajax(settings).done(function (response) {
         }
 });
 */
-/*//AJAX CALL, ADD IMAGE TO A GALLERY
 
-my_email = "1";
-glr_name = "glr1";
-img_name = "123"
-
-var form = new FormData();
-form.append("my_email", my_email);
-form.append("glr_name", glr_name);
-form.append("img_name", img_name);
-form.append("img", "/home/stavros/Pictures/t1.jpeg");
-
-var settings = {
-  "async": true,
-  "crossDomain": true,
-  "url": "http://localhost:4010/api/image",
-  "method": "POST",
-  "headers": {
-    "Content-Type": "application/json",
-    "Authorization": auth_token 
-  },
-  "processData": false,
-  "contentType": false,
-  "mimeType": "multipart/form-data",
-  "data": form
-}
-$.ajax(settings).done(function (response) {
-  console.log(response);
-})
-.fail(function (response) {
-  console.log(response);
-  return;
-      var message= response['responseJSON']['message'];
-        if (message != null){
-            console.log(message);
-        }else{
-            console.log("Bad request");
-        }
-});
 
 //AJAX CALL, GET IMAGE 
-
+/*
 my_email = "1";
 glr_name = "glr1";
 img_name = "alaska.jpg"
