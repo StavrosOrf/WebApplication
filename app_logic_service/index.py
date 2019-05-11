@@ -14,6 +14,9 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
 from flask_jwt_extended import JWTManager
 import string
 import random
+from PIL import Image
+from shutil import copyfileobj
+from os import remove
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -346,7 +349,7 @@ def add_image():
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
-        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.$.img_name":img_name}):
+        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):###
             resp = jsonify({'message': "Image name already exists!"})
             resp.headers['Access-Control-Allow-Origin'] = '*'
             return resp, 400
@@ -354,13 +357,14 @@ def add_image():
         ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
         access_token = id_generator();
 
-        images = [img,img]
+        img1 = img.stream.read()
+
         files = [0,0]
         img.filename = my_email+"."+access_token
+
         for i in reversed(range(2)): 
             URL = ss_uri[i] + "/api/image"
-            files[i] = {'img': (my_email+"."+access_token+".jpeg",images[i],'multipart/form-data',{'Expires': '0'})}
-            # print(URL)
+            files[i] = {'img': (my_email+"."+access_token+".jpeg",img1,'multipart/form-data',{'Expires': '0'})}
 
             r = requests.post(URL,files = files[i]) 
             # print(img)
@@ -369,6 +373,8 @@ def add_image():
                 resp = jsonify({'message': "Failure"})
                 resp.headers['Access-Control-Allow-Origin'] = '*'
                 return resp, 400
+
+
 
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
         { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
