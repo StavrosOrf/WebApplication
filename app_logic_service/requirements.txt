@@ -10,4 +10,4 @@ Flask_JWT_Extended
 connexion[swagger-ui]
 #requests-toolbelt
 flask-cors
-pillow
+Pillow

@@ -7,11 +7,31 @@ var profile_card_html = `<div class="card">
   <p><button class="galleries-btn">Galleries</button></p>
 </div>`;
 
+var add_gallery_html=`<div class="add-gallery">
+  <input type="text"placeholder="new gallery name"/ >
+  <button class="upload-button">Add New Gallery</button>
+</div>`;
+
 var gallery_html = `<div class="card">
   <img src="some_image.jpg" alt=" " style="width:100%">
   <div class="title" style="color: grey;font-size: 30px;">{0}<i class="fa fa-images"></i></div>	
   <p><button class="gallery-btn">View</button></p>
+  {1}
 </div>`;
+var add_image_html = `<div class="upload_image">
+      <form action="http://localhost:4010/api/image#res.redirect" method="POST" enctype="multipart/form-data" target="formSend">
+    Image name:
+    <input id="token" type="text" name="token" value="" hidden>
+    <input id="my_email" type="text" name="my_email" value="" hidden>
+    <input id="glr_name" type="text" name="glr_name" value="" hidden>
+    <input type="text" name="img_name" value="" placeholder="Image name" required>
+    <input id="file" type="file" name="img" accept="image/*" required>
+    <div>
+      <input id="upload_button" class="upload-button" type="submit" value="Upload">
+      <iframe id="frame" name="formSend" height="25px"></iframe>  
+    </div> 
+  </form>
+  </div>`;
 
 var image_content_html = `<div class="block">
     <div class="image-container">
@@ -52,6 +72,9 @@ var content_section_html = `<!DOCTYPE html>
   margin: auto;
   text-align: center;
   font-family: arial;
+
+  display:block;
+  position:relative;
 }
 
 .galleries-btn, .gallery-btn {
@@ -65,6 +88,33 @@ var content_section_html = `<!DOCTYPE html>
   cursor: pointer;
   width: 100%;
   font-size: 18px;
+}
+.delete-gallery-btn{
+  position:absolute;
+  width:5%;
+  height:20%;
+  top:-2%;
+  right:-2%;
+  background-color:red;
+  text-color:white;
+  text-align: center;
+  border-radius:100%;
+}
+.add-gallery{
+  background-color:#3399ff;
+  text-align:center;
+  width:20%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  margin: auto;
+  margin-bottom:20px;
+  border:5px black outset;
+  display:block;
+  position:relative;
+}
+.upload-button{
+  background-color:green;
+  color:white;
+  font-weight: bold;
 }
 
 .fa {
@@ -96,8 +146,17 @@ var content_section_html = `<!DOCTYPE html>
   border-bottom:solid blue; 
   background-color: white;
   height:500px;
-
-
+}
+.upload_image{
+  display:block;
+  position:relative;
+  margin:auto;
+  background-color:#3399ff;
+  width:100%;
+  border:5px black outset;
+  text-align:center;
+  color:white;
+  font-weight: bold;
 }
 .comm-button{
   border-radius: 50%;
@@ -164,7 +223,7 @@ $(document).ready(function(){
 	}
 
 	function get_my_email(){
-		my_email = "some@email.com";//localStorage.getItem('my_email');
+		my_email = localStorage.getItem('my_email');
 		return my_email;
 	}
 
@@ -293,7 +352,7 @@ $(document).ready(function(){
 		image_name: "default_image_name"
 	};
 
-	var auth_token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwYXNzd29yZCI6IjEiLCJlbWFpbCI6IjEifQ.0KD7aL3DNXPLYV2KOFhCkE59m7V3rBrM-pJFaVPy8k4";//"Bearer " +localStorage.getItem('token');
+	var auth_token = "Bearer " +localStorage.getItem('token');
 
 	var my_email = get_my_email();	
 	var my_user = get_user(my_email);
@@ -366,6 +425,10 @@ $(document).ready(function(){
 
 	function make_gallery_images_UI(email, images, glr_name){
 		var glr_images_html = '';
+
+		if(target.email == get_my_email()){
+			glr_images_html += add_image_html;
+		}
 		images.forEach(function(image){
 			glr_images_html += make_image_html(target.email, image, target.glr_name);
 		})
@@ -377,14 +440,27 @@ $(document).ready(function(){
 		var gallery_images_html = make_gallery_images_UI(target.email, images, target.glr_name);
 		content_html = content_section_html.format(gallery_images_html);
 		$("#content").html(content_html);
-	}
+
+		try {
+		  document.getElementById("frame").style.visibility = "hidden";
+		  document.getElementById("my_email").value = my_email;
+		  document.getElementById("glr_name").value = target.glr_name;
+		  document.getElementById("token").value = auth_token;
+		}
+		catch(err) {}
+			}
 
 	function make_gallery_html(gallery, email){
-		return gallery_html.format(gallery.name);
+		var is_my_profile = my_email==target.email;
+		return gallery_html.format(gallery.name,((is_my_profile)?'<button class="delete-gallery-btn"></button>':''));
 	}
 
 	function make_galleries_UI(galleries, email){
 		var galleries_html = '';
+		
+		if(target.email == get_my_email()){
+			galleries_html += add_gallery_html;
+		}
 		galleries.forEach(function(gallery){
 			galleries_html += make_gallery_html(gallery, email);
 		});
@@ -454,6 +530,15 @@ $(document).ready(function(){
 	$(document).on('click', ".remove_comment-btn", function() {
 		alert("Comment-removed");
 	});
+
+
+	$(document).on('click', "#upload_button", function(){
+	  	document.getElementById("frame").style.visibility = "visible";
+	  	setTimeout(timer,3000);
+	});
+	function timer(){
+	    document.getElementById("frame").style.visibility = "hidden";
+	}
 
 	$(".logout").click(function(){ 
 	  var my_email = localStorage.getItem('my_email');
