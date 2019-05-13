@@ -73,10 +73,10 @@ def login():
 
         # print(decode(token,os.environ.get('SECRET'),algorithms=['HS256']))
         resp = jsonify({'token': token})
-        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200
     resp  = jsonify({'message': "Log in Failed"})
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 400    
 
 
@@ -86,10 +86,10 @@ def logout(my_email):
     db_response = mongo.db.logged_in_users.delete_one({'email': my_email, 'token': token})
     if db_response.deleted_count == 1:
         resp = jsonify({'message': "Successfully logged out"})
-        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200
     resp = jsonify({'message': "Log out Failed"})
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 400    
 
 #@app.app.route('/register', methods=['POST'])
@@ -102,7 +102,7 @@ def register():
     # Insert registered user
     if mongo.db.reg_users.find_one({'email': email}):
         resp = jsonify({'message': "Failed to  registered user:Email already in use!!"})
-        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 400
     mongo.db.reg_users.insert_one({"name": name, "email": email, "password": password_hash})
 
@@ -114,11 +114,11 @@ def register():
 
     if r.status_code!=200 :
         resp = jsonify({'message': "Failed to  registered user"})
-        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 400
 
     resp = jsonify({'message': "Successfully registered user"})
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 200  
 
 def authenticate(my_email):
@@ -128,10 +128,10 @@ def authenticate(my_email):
     logged_in_user = mongo.db.logged_in_users.find_one({'email': my_email, 'token': token})
     if logged_in_user:
         resp = jsonify({'message': "Successfully authenticated user"})
-        resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200  
     resp = jsonify({'message':"Failed to authenticate user"})
-    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 400      
     
 
