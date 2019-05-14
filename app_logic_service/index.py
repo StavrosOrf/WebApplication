@@ -57,12 +57,11 @@ mongo = PyMongo(app.app)
 #     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-def authenticate(my_email,token):
+def authenticate(token):
     # print("auth_entry")
-    URL = "http://auth_service:4020/api/authenticate/"
-    myUrl = URL + my_email
+    URL = "http://auth_service:4020/api/authenticate"
     head = {'Authorization': 'Bearer {}'.format(token)}
-    r = requests.get(myUrl, headers=head) 
+    r = requests.get(URL, headers=head) 
     # print(r)
     if r.status_code == 200 :
         return True
@@ -83,7 +82,7 @@ def get_all_users(email):
 
     #mongo.db.users.find(name)
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -109,12 +108,10 @@ def add_user():
 def get_user(email):
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
-
-    token = request.headers['Authorization'].split()[1]
 
     user = mongo.db.users.find_one({'email': email})
 
@@ -133,7 +130,7 @@ def get_all_friends():
     my_email= req_body['my_email']
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -155,7 +152,7 @@ def add_friend():
     my_email, friend_email = req_body['my_email'], req_body['friend_email']
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -184,7 +181,7 @@ def add_friend():
 
 def remove_friend(my_email,friend_email):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -205,7 +202,7 @@ def remove_friend(my_email,friend_email):
 
 def get_all_galleries(my_email):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -228,7 +225,7 @@ def add_gallery():
     email, glr_name = req_body['my_email'], req_body['glr_name']
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -253,13 +250,14 @@ def add_gallery():
 
 def remove_gallery(my_email,glr_name):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
 
     user = mongo.db.users.find_one({'email': my_email})
     if user:
+        #ADD CHECK FOR GSLLERY EXISTENCE
         mongo.db.users.update( { 'email': my_email }, { '$pull': { 'galleries': { "glr_name":glr_name} } })
 
         resp = jsonify({'message': "Succesfully removed Gallery"})
@@ -276,7 +274,7 @@ def get_all_images():
     email, glr_name = req_body['my_email'], req_body['glr_name']
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -294,10 +292,14 @@ def get_all_images():
 
             ss_uri =  str(ss_uri).replace("storage_service1","localhost")
             ss_uri =  str(ss_uri).replace("storage_service2","localhost") 
-            images.append(str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg"+" "+str(image['img_name']))
+            images.append({
+                            'link': str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg",
+                            'name':str(image['img_name'])
+                          })
                 
 
         resp = jsonify(images)
+        print(images);
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200 
 
@@ -307,7 +309,7 @@ def get_all_images():
 
 def get_image(email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -342,14 +344,14 @@ def add_image():
     img_name = request.form['img_name']
 
     token = request.form['token'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
         
     user = mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name})
     if user:
-        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):###
+        if mongo.db.users.find_one({'email': my_email,"galleries.glr_name":glr_name,"galleries.Images.img_name":img_name}):###------------
             resp = jsonify({'message': "Image name already exists!"})
             resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
             return resp, 400
@@ -389,7 +391,7 @@ def add_image():
 
 def remove_image(my_email,glr_name,img_name):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -434,7 +436,7 @@ def get_comments(my_email):
 
 
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -448,7 +450,7 @@ def get_comments(my_email):
         comments = mongo.db.comments.find({'email':email,"glr_name":glr_name,"img_name":img_name})
         comm_list = []
         for comm in comments:
-            comm_list.append({"comment":comm['comment'],"user_name":comm['user_name'],"id":comm['comm_id'],"email":comm['email']})
+            comm_list.append({"comment":comm['comment'],"user_name":comm['user_name'],"id":comm['comm_id'],"email":comm['my_email']})
         resp = jsonify(comm_list)
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200
@@ -459,7 +461,7 @@ def get_comments(my_email):
 
 def add_comment(id,my_email):# MAY NEED TO CHECK IF USER IS FRIEND
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -470,13 +472,13 @@ def add_comment(id,my_email):# MAY NEED TO CHECK IF USER IS FRIEND
     user_name = req_body['user_name']
 
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
-    # print(user)
+    #print(user)
     if user:
         for image in user['galleries'][0]['Images']:
         
             if image['img_name'] == img_name:
                 comm_id = email +"."+id_generator()
-                mongo.db.comments.insert_one({'email':email,'comm_id': comm_id,"user_name":user_name,"glr_name":glr_name,"img_name":img_name,"comment" : comment})
+                mongo.db.comments.insert_one({'email':email,'my_email':my_email,'comm_id': comm_id,"user_name":user_name,"glr_name":glr_name,"img_name":img_name,"comment" : comment})
                 resp = jsonify({'message': "Succesfully added Comment",'id':comm_id})
                 resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
                 return resp, 200
@@ -488,7 +490,7 @@ def add_comment(id,my_email):# MAY NEED TO CHECK IF USER IS FRIEND
 
 def remove_comment(id,my_email):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401
@@ -501,7 +503,7 @@ def remove_comment(id,my_email):
 
 def edit_comment(id,my_email):
     token = request.headers['Authorization'].split()[1]
-    if not authenticate(my_email,token):
+    if not authenticate(token):
         resp = jsonify({'message': "Failed to authorize"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 401

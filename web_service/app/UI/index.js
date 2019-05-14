@@ -9,7 +9,7 @@ var profile_card_html = `<div class="card">
 
 var add_gallery_html=`<div class="add-gallery">
   <input type="text"placeholder="new gallery name"/ >
-  <button class="upload-button">Add New Gallery</button>
+  <button id="gallery_upload_button" class="upload-button">Add New Gallery</button>
 </div>`;
 
 var gallery_html = `<div class="card">
@@ -19,7 +19,7 @@ var gallery_html = `<div class="card">
   {1}
 </div>`;
 var add_image_html = `<div class="upload_image">
-      <form action="http://localhost:4010/api/image#res.redirect" method="POST" enctype="multipart/form-data" target="formSend">
+      <form id="upload_image_form" action="http://localhost:4010/api/image" method="POST" enctype="multipart/form-data" target="formSend">
     Image name:
     <input id="token" type="text" name="token" value="" hidden>
     <input id="my_email" type="text" name="my_email" value="" hidden>
@@ -27,8 +27,8 @@ var add_image_html = `<div class="upload_image">
     <input type="text" name="img_name" value="" placeholder="Image name" required>
     <input id="file" type="file" name="img" accept="image/*" required>
     <div>
-      <input id="upload_button" class="upload-button" type="submit" value="Upload">
-      <iframe id="frame" name="formSend" height="25px"></iframe>  
+      <input id="image_upload_button" class="upload-button" type="submit" value="Upload">
+      <iframe id="upload_image_frame" name="formSend" height="25px"></iframe>  
     </div> 
   </form>
   </div>`;
@@ -51,6 +51,7 @@ var image_content_html = `<div class="block">
       <div class="comments">
     	{2}
       </div>
+      {3}
     </div>
   </div>`;
    
@@ -64,6 +65,7 @@ var comment_html = `<div id={0} class="comment">
 var content_section_html = `<!DOCTYPE html>
 <html>
 <head>
+<script src="http://malsup.github.com/jquery.form.js"></script> 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 <style>
 .card {
@@ -100,6 +102,17 @@ var content_section_html = `<!DOCTYPE html>
   text-align: center;
   border-radius:100%;
 }
+.delete-image-btn{
+  position:absolute;
+  width:2.5%;
+  height:5%;
+  top:-2%;
+  right:-1%;
+  background-color:red;
+  text-color:white;
+  text-align: center;
+  border-radius:100%;
+}
 .add-gallery{
   background-color:#3399ff;
   text-align:center;
@@ -128,6 +141,9 @@ var content_section_html = `<!DOCTYPE html>
 }
 
 .block {
+  display:block;
+  position:relative;
+
   border: 5px outset blue ;
   border-radius: 10px;
   background-color: white;
@@ -272,8 +288,37 @@ $(document).ready(function(){
 	}
 
 	function get_galleries(email){
-		// Ajax call
-		galleries = [
+
+		//AJAX CALL,  GETT ALL GALLERIES
+
+		my_email = email;
+		
+
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/galleries/"+my_email,
+		  "method": "POST",
+		  "headers": {
+		    "Authorization": auth_token
+		  }
+		}
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		  galleries = response['galleries'];
+		  console.log(galleries);
+		})
+		.fail(function (response) {
+			  galleries = [];
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
+/*		galleries = [
 			{
 				name: "Cats"
 			},
@@ -284,33 +329,88 @@ $(document).ready(function(){
 				name: "Turtles"
 			}
 		];
-
-		return galleries;
+*/
+		//return galleries;
 	}
 
 	function get_images(glr_name, email){
-		// Ajax call
-		images = [
-			{
-				name: "cat1",
-				link: "https://news.nationalgeographic.com/content/dam/news/2018/05/17/you-can-train-your-cat/02-cat-training-NationalGeographic_1484324.ngsversion.1526587209178.adapt.1900.1.jpg"
-			},
-			{
-				name: "cat2",
-				link: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80"
-			},
-			{
-				name: "cat3",
-				link: "https://www.humanesociety.org/sites/default/files/styles/400x400/public/2018/06/cat-217679.jpg?h=c4ed616d&itok=H0FcH69a"
-			}
-		];
 
-		return images;
+
+		var data = JSON.stringify({my_email:email,glr_name:glr_name});
+
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/gallery/images",
+		  "method": "POST",
+		  "headers": {
+		    "Content-Type": "application/json",
+		    "Authorization": auth_token
+		  },
+		  "data": data
+		}
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		  images = response;
+		})
+		.fail(function (response) {
+			  images = [];
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
+		// Ajax call
+		// images = [
+		// 	{
+		// 		name: "cat1",
+		// 		link: "https://news.nationalgeographic.com/content/dam/news/2018/05/17/you-can-train-your-cat/02-cat-training-NationalGeographic_1484324.ngsversion.1526587209178.adapt.1900.1.jpg"
+		// 	},
+		// 	{
+		// 		name: "cat2",
+		// 		link: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80"
+		// 	},
+		// 	{
+		// 		name: "cat3",
+		// 		link: "https://www.humanesociety.org/sites/default/files/styles/400x400/public/2018/06/cat-217679.jpg?h=c4ed616d&itok=H0FcH69a"
+		// 	}
+		// ];
 	}
 
 	function get_comments(email, glr_name, image_name){
-		// Ajax call
-		comments = [
+		data = JSON.stringify({email:email,glr_name:glr_name,img_name:image_name});
+
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/image/comments/"+get_my_email(),
+		  "method": "POST",
+		  "headers": {
+		    "Content-Type": "application/json",
+		    "Authorization": auth_token
+		  },
+		  "processData": false,
+		  "data": data
+		}
+
+		 return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		  comments = response;
+		  console.log(comments);
+		})
+		.fail(function (response) {
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
+
+/*		comments = [
 			{
 				id: "1",
 				user_name: "bob87",
@@ -341,9 +441,8 @@ $(document).ready(function(){
 				comment: "iuqeords.mn",
 				email: "okojoi@nm.com"
 			}
-		];
+		];*/
 
-		return comments;
 	}
 	
 	target = {
@@ -357,7 +456,11 @@ $(document).ready(function(){
 	var my_email = get_my_email();	
 	var my_user = get_user(my_email);
 	var my_friends = get_friends();
-	var my_galleries = get_galleries();
+	//var my_galleries = get_galleries();
+	var galleries=[];
+	var images = [];
+	var comments=[];
+	var comment_json={};
 
 	function set_target_email(email){
 		target.email = email;
@@ -386,8 +489,7 @@ $(document).ready(function(){
 	}
 
 	function make_comment_html(comment_json){
-		var my_email = get_my_email();
-		var remove_btn_html = (my_email == comment_json.email)?
+		var remove_btn_html = (get_my_email() == comment_json.email)?
 			'<button class="remove_comment-btn">Remove</button>':
 			'';
 		return comment_html.format(comment_json.id, 
@@ -397,69 +499,128 @@ $(document).ready(function(){
 								   remove_btn_html);
 	}
 
-	function add_comment(comment){
-		// var my_email = get_my_email();
-		// target_email
-		// target_glr_name
-		// target_image_name
-		// comment
-		// Ajax call to save @ backend
+	function add_comment(comment, img_name){
 
-		comment_html = make_comment_html(comment_json);
-		$('.comments').append(comments_html);
+		data = JSON.stringify({
+								email: target.email,
+								glr_name: target.glr_name,
+								img_name: img_name,
+								user_name: my_user.name,
+								comment: comment
+							});
+		console.log(data);
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/comments/"+get_my_email()+"/new",
+		  "method": "POST",
+		  "headers": {
+		    "Content-Type": "application/json",
+		    "Authorization": auth_token
+		  },
+		  "data": data
+		};
+
+		comment_json = {};
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		  comment_json = {
+			id: response['id'],
+			user_name: my_user.name,
+			comment: comment,
+			email: get_my_email()
+		  }
+
+		  // Append comment to UI
+
+		})
+		.fail(function (response) {
+		      var message= response['responseJSON']['message'];
+
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
 	}
 
-	function make_image_comments_html(comments){
+	function make_image_comments_html(){
 		var comments_html = '';
-		comments.forEach(function(comment){
+		if(comments != []){
+			comments.forEach(function(comment){
 			comments_html += make_comment_html(comment);
 		})
+		}
+		
 		return comments_html;
 	}
 
 	function make_image_html(email, image, glr_name){
-		var comments = get_comments(email, glr_name, image.name);
-		var comments_html = make_image_comments_html(comments);
-		return image_content_html.format(image.link, image.name, comments_html);
+		$.when(get_comments(email, glr_name, image.name)).done(function(a){
+			var comments_html = make_image_comments_html();
+			var is_my_profile = true;// my_email==target.email;
+			return image_content_html.format(image.link, image.name, comments_html,((is_my_profile)?'<button class="delete-image-btn"></button>':''));
+		});
+
 	}
 
-	function make_gallery_images_UI(email, images, glr_name){
+	function make_gallery_images_UI(email, glr_name){
 		var glr_images_html = '';
 
 		if(target.email == get_my_email()){
 			glr_images_html += add_image_html;
 		}
-		images.forEach(function(image){
-			glr_images_html += make_image_html(target.email, image, target.glr_name);
-		})
+		
+		if(images!=[]){
+			images.forEach(function(image){
+				console.log(image);
+				glr_images_html += make_image_html(target.email, image, target.glr_name);
+			})
+		}
 		return glr_images_html;
 	}
 
 	function render_gallery_images_UI(){
-		var images = get_images(target.glr_name, target.email);
-		var gallery_images_html = make_gallery_images_UI(target.email, images, target.glr_name);
+		var gallery_images_html = make_gallery_images_UI(target.email, target.glr_name);
 		content_html = content_section_html.format(gallery_images_html);
 		$("#content").html(content_html);
 
 		try {
-		  document.getElementById("frame").style.visibility = "hidden";
+		  document.getElementById("upload_image_frame").style.visibility = "hidden";
 		  document.getElementById("my_email").value = my_email;
 		  document.getElementById("glr_name").value = target.glr_name;
 		  document.getElementById("token").value = auth_token;
+
+		  // bind 'myForm' and provide a simple callback function 
+	    $('#upload_image_form').ajaxForm(function() { 
+	        $.when(get_images(target.glr_name, target.email)).done(function(a){
+				render_gallery_images_UI();
+			});
+
+			alert("Succesfully Uploaded Image");
+	    }); 
+
 		}
 		catch(err) {}
 			}
 
 	function make_gallery_html(gallery, email){
 		var is_my_profile = my_email==target.email;
-		return gallery_html.format(gallery.name,((is_my_profile)?'<button class="delete-gallery-btn"></button>':''));
+		return gallery_html.format(gallery.glr_name,((is_my_profile)?'<button class="delete-gallery-btn"></button>':''));
 	}
 
-	function make_galleries_UI(galleries, email){
+	function make_galleries_UI(email){
 		var galleries_html = '';
 		
 		if(target.email == get_my_email()){
 			galleries_html += add_gallery_html;
+		}
+		console.log(galleries);
+
+		if(galleries != []){
+
 		}
 		galleries.forEach(function(gallery){
 			galleries_html += make_gallery_html(gallery, email);
@@ -468,16 +629,18 @@ $(document).ready(function(){
 	}
 
 	function render_galleries_UI(){
-		var galleries = get_galleries(target.email);
-	  	var galleries_html = make_galleries_UI(galleries, target.email);
-		var galleries_UI_html = content_section_html.format(galleries_html);
-		$("#content").html(galleries_UI_html);
+		$.when(get_galleries(target.email)).done(function(a1){//var galleries =
+		  	var galleries_html = make_galleries_UI(target.email);
+			var galleries_UI_html = content_section_html.format(galleries_html);
+			$("#content").html(galleries_UI_html);
+		});	
 	}
 
 	function make_my_friends_UI(){
 		var my_friends_html = '';
+		//if
 		my_friends.forEach(function(friend){
-	    	my_friends_html += make_profile_card_html(friend);
+	    my_friends_html += make_profile_card_html(friend);
 		});
 		return my_friends_html;
 	}
@@ -486,6 +649,83 @@ $(document).ready(function(){
 		var my_friends_html = make_my_friends_UI();
 		var my_friends_UI_html = content_section_html.format(my_friends_html);
 		$("#content").html(my_friends_UI_html);
+	}
+
+	function add_gallery(glr_name){
+		var data = JSON.stringify({my_email:get_my_email(),glr_name:glr_name});
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/galleries/add",
+		  "method": "POST",
+		  "headers": {
+		     "Content-Type": "application/json",
+		    "Authorization": auth_token
+		  },
+		  "data": data
+		}
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		  
+		})
+		.fail(function (response) {
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
+	}
+
+	function remove_gallery(glr_name){
+
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/galleries/remove?my_email="+get_my_email() + "&glr_name=" + glr_name,
+		  "method": "DELETE",
+		  "headers": {
+		    "Authorization": auth_token
+		  }
+		}
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		})
+		.fail(function (response) {
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
+	}
+
+	function remove_image(img_name){
+		var settings = {
+		  "async": true,
+		  "crossDomain": true,
+		  "url": "http://localhost:4010/api/image?my_email="+get_my_email()+"&glr_name="+target.glr_name+"&img_name="+ img_name,
+		  "method": "DELETE",
+		  "headers": {
+		    "Authorization": auth_token
+		  }
+		}
+
+		return $.ajax(settings).done(function (response) {
+		  console.log(response);
+		})
+		.fail(function (response) {
+		      var message= response['responseJSON']['message'];
+		        if (message != null){
+		            console.log(message);
+		        }else{
+		            console.log("Bad request");
+		        }
+		});
 	}
 
 	$(".menu-btn").click(function(){
@@ -512,33 +752,79 @@ $(document).ready(function(){
 		set_target_email(email);
 		render_galleries_UI();
 	});
+	
+	$(document).on('click', ".delete-gallery-btn", function() {
+		glr_name = $(this).parent().children()[1].innerText;
+		console.log(glr_name);
+		set_target_glr_name(glr_name);
+		$.when(remove_gallery(glr_name)).done(function(a){
+			render_galleries_UI();
+		});
+	});
+
+	$(document).on('click', ".delete-image-btn", function() {
+		img_name = $(this).parent().find("h2")[0].innerText;
+		console.log(img_name);
+		
+		$.when(remove_image(img_name)).done(function(a){
+			// Reload content
+			$.when(get_images(target.glr_name, target.email)).done(function(a){
+				render_gallery_images_UI();
+			});
+		});
+	});
 
 	$(document).on('click', ".gallery-btn", function() {
 		glr_name = $(this).parent().parent().children()[1].innerText;
 		console.log(glr_name);
 		set_target_glr_name(glr_name);
-		render_gallery_images_UI();
+		$.when(get_images(target.glr_name, target.email)).done(function(a){
+			render_gallery_images_UI();
+		});
+		
 	});
 
 	
 	$(document).on('click', ".add_comment-btn", function() {
-		var comment = $('#comment_input').val();
-		add_comment(comment);
-		alert("Comment-added");
+
+		var img_name = $(this).parent().parent().find("h2")[0].innerText;
+		var comment = $(this).parent().children()[0].value;
+		
+		$.when(add_comment(comment,img_name)).done(function(a){
+		  
+		  comment_html = make_comment_html(comment_json);
+		  $(this).parent().append(comment_html);
+		  alert("Comment-added");
+		});
+		
 	});
 
 	$(document).on('click', ".remove_comment-btn", function() {
+
+		$(this).parent().remove();
 		alert("Comment-removed");
+	});	
+
+/*	$(document).on('click', "#image_upload_button", function(){
+	  	//document.getElementById("upload_image_frame").style.visibility = "hidden";
+	 	
+	  	
+	  	//setTimeout(timer,3000);
+
 	});
 
-
-	$(document).on('click', "#upload_button", function(){
-	  	document.getElementById("frame").style.visibility = "visible";
-	  	setTimeout(timer,3000);
-	});
 	function timer(){
-	    document.getElementById("frame").style.visibility = "hidden";
+	    document.getElementById("upload_image_frame").style.visibility = "hidden";
 	}
+*/
+	$(document).on('click', "#gallery_upload_button", function(){
+	  	glr_name = $(this).parent().children()[0].value;		
+		
+		$.when(add_gallery(glr_name)).done(function(a){
+			render_galleries_UI();
+		});
+
+	});
 
 	$(".logout").click(function(){ 
 	  var my_email = localStorage.getItem('my_email');

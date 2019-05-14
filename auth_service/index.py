@@ -71,7 +71,7 @@ def login():
         token = encode(req_body,os.environ.get('SECRET'),algorithm='HS256')
         mongo.db.logged_in_users.insert_one({"email": email, "token": token})
 
-        # print(decode(token,os.environ.get('SECRET'),algorithms=['HS256']))
+        print(decode(token,os.environ.get('SECRET'),algorithms=['HS256']))
         resp = jsonify({'token': token})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
         return resp, 200
@@ -121,11 +121,13 @@ def register():
     resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 200  
 
-def authenticate(my_email):
+def authenticate():
     ''' auth request endpoint '''
     # Get token from "Authorization: Bearer <token>" part of header
     token = request.headers['Authorization'].split()[1]
-    logged_in_user = mongo.db.logged_in_users.find_one({'email': my_email, 'token': token})
+
+    email = decode(token,os.environ.get('SECRET'),algorithms=['HS256'])['email'];
+    logged_in_user = mongo.db.logged_in_users.find_one({'email': email, 'token': token})
     if logged_in_user:
         resp = jsonify({'message': "Successfully authenticated user"})
         resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'

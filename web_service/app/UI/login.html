@@ -117,7 +117,7 @@
             localStorage.setItem('my_email',email);
             localStorage.setItem('token',response['token']);
             alert("Succedfully Logged In!!!");
-            window.location.href("http://localhost:4000");
+            window.location.href ="http://localhost:4000";
         }).fail(function (response) {
           var message= response['responseJSON']['message'];
             if (message != null){

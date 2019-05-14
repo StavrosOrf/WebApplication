@@ -65,7 +65,7 @@ paths:
         "200":
           description: Successfully registered user
           
-  /authenticate/{my_email}:
+  /authenticate:
     get:
       operationId: index.authenticate
       tags:
@@ -77,12 +77,6 @@ paths:
       security:
         - jwt:
             []
-      parameters:
-        - name: my_email
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: Successfully authenticated request
