@@ -130,10 +130,10 @@ def authenticate():
     logged_in_user = mongo.db.logged_in_users.find_one({'email': email, 'token': token})
     if logged_in_user:
         resp = jsonify({'message': "Successfully authenticated user"})
-        resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+        resp.headers['Access-Control-Allow-Origin'] = '*' #'http://localhost:4000'
         return resp, 200  
     resp = jsonify({'message':"Failed to authenticate user"})
-    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+    resp.headers['Access-Control-Allow-Origin'] = '*' #'http://localhost:4000'
     return resp, 400      
     
 

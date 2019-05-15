@@ -90,7 +90,7 @@ def get_all_users(email):
     usr_list = []
     users = mongo.db.users.find()
     for usr in users:
-        usr_list.append(usr['email']+" "+ usr['name'])
+        usr_list.append({"email":usr['email'],"name":usr['name']})
     resp = jsonify(usr_list)
     resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 200  
