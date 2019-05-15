@@ -72,6 +72,7 @@ var content_section_html = `<!DOCTYPE html>
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   max-width: 200px;
   margin: auto;
+  margin-bottom:50px;
   text-align: center;
   font-family: arial;
 
@@ -516,6 +517,10 @@ $(document).ready(function(){
 	var comment_json = {};
 	var my_allowed_profiles = [];
 
+	var render_friends = true ;
+
+	$("#content").html("<h1>Welcome!!!</h1>");
+
 	function set_target_email(email){
 		target.email = email;
 	}
@@ -525,8 +530,8 @@ $(document).ready(function(){
 	}
 
 	function make_profile_card_html(user){
-		console.log(my_friends);
-		console.log(my_allowed_profiles);
+		//console.log(my_friends);
+		//console.log(my_allowed_profiles);
 		var is_user_added = false;
 		var has_user_allowed_me = false;
 		
@@ -644,14 +649,14 @@ $(document).ready(function(){
 		};
 
 		return $.ajax(settings).done(function (response) {
-		  console.log(response);
+		  //console.log(response);
 		})
 		.fail(function (response) {
 		      var message= response['responseJSON']['message'];
 		        if (message != null){
-		            console.log(message);
+		            //console.log(message);
 		        }else{
-		            console.log("Bad request");
+		            //console.log("Bad request");
 		        }
 		});
 	}
@@ -684,7 +689,7 @@ $(document).ready(function(){
 		if(target.email == get_my_email()){
 			glr_images_html += add_image_html;
 		}
-		console.log("for before promise");
+		//console.log("for before promise");
 
 		const get_gallery_comments  = new Promise((resolve, reject) => {
 				gallery_comments = new Array(images.length);
@@ -701,7 +706,7 @@ $(document).ready(function(){
 				})
 			});
 
-		console.log("for loop images");
+		//console.log("for loop images");
 		if(images.length != 0){
 			//$.when(get_comments(target.email, target.glr_name, image.name)).done(function(a){
 			get_gallery_comments.then(values=>{
@@ -709,9 +714,9 @@ $(document).ready(function(){
 					console.log("for loop images");
 					glr_images_html += make_image_html(target.email, image, target.glr_name,i);
 				})
-				console.log("In .then ");
+				//console.log("In .then ");
 				content_html = content_section_html.format(glr_images_html);
-				console.log(content_html);
+				//console.log(content_html);
 				$("#content").html(content_html);
 
 				try {
@@ -773,7 +778,7 @@ $(document).ready(function(){
 
 	function make_gallery_html(gallery, email){
 		var is_my_profile = my_email==target.email;
-		return gallery_html.format(gallery.glr_name,((is_my_profile)?'<div class="delete-gallery-btn"></button>':''));
+		return gallery_html.format(gallery.glr_name,((is_my_profile)?'<button class="delete-gallery-btn"></button>':''));
 	}
 
 	function make_galleries_UI(email){
@@ -1002,6 +1007,7 @@ $(document).ready(function(){
 	})
 
 	$(".my_friends-btn").click(function(){ 
+		render_friends = true;
 		render_my_friends_UI();
 	})
 	  
@@ -1018,7 +1024,12 @@ $(document).ready(function(){
 
 		$.when(remove_friend(friend_email)).done(function(a){
 			$.when(get_friends()).done(function(a1){
-				render_all_users_UI();
+				if(render_friends){
+					render_my_friends_UI();
+				}else{
+					render_all_users_UI();
+				}
+				
 			});
 		});
 	});
@@ -1029,7 +1040,11 @@ $(document).ready(function(){
 
 		$.when(add_friend(friend_email)).done(function(a){
 			$.when(get_friends()).done(function(a1){
-				render_all_users_UI();
+				if(render_friends){
+					render_my_friends_UI();
+				}else{
+					render_all_users_UI();
+				}
 			});
 		});
 
@@ -1099,7 +1114,7 @@ $(document).ready(function(){
 		$.when(remove_comment(comm_id)).done(function(a){
 		  
 		  //render_gallery_images_UI();
-		  console.log("Comment-removed"+ comm_id);
+		  //console.log("Comment-removed"+ comm_id);
 		});
 
 	});	
@@ -1133,6 +1148,7 @@ $(document).ready(function(){
 		  .done(function (response) {
 		    	//console.log(response);
 		    	all_users = response;
+		    	render_friends = false;
 		    	render_all_users_UI();
 		  }).fail(function (response) {
 		  		all_users = [];
