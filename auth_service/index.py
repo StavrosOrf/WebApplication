@@ -21,33 +21,22 @@ import connexion
 from connexion import NoContent
 from jwt import(encode,decode)
 
-#from logger import logger 
-
-# Create a logger object to log the info and debug
-#LOG = logger.get_root_logger(os.environ.get(
- #   'ROOT_LOGGER', 'root'), filename=os.path.join(ROOT_PATH, 'output.log'))
-
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 
-# my_client = kz_client.KazooClient('ZK')
+my_client = kz_client.KazooClient('ZK')
  
-# def my_listener(state):
-#     if state == kz_client.KazooState.CONNECTED:
-#         print("Client connected !")
+def my_listener(state):
+    if state == kz_client.KazooState.CONNECTED:
+        print("ZK Client connected !")
  
-# my_client.add_listener(my_listener)
-# my_client.start(timeout=40)
-# if app:
-#     print('OK!!!!')
+my_client.add_listener(my_listener)
+my_client.start(timeout=40)
 
 flask_bcrypt = Bcrypt(app.app)
 jwt = JWTManager(app.app) 
 # Docker
 app.app.config['MONGO_URI'] = os.environ.get('DB')
-# Debug
-#app.app.config['MONGO_URI'] = "mongodb://localhost:27017/myDatabase"  
-print("Connected to DEBUG mongodb")
 mongo = PyMongo(app.app)
 
 
@@ -58,8 +47,7 @@ def decode_token(token):
 #@app.app.route('/auth', methods=['POST'])
 def login():
     ''' auth login endpoint '''
-    #data = validate_user(request.get_json())
-    #if data['ok']:
+
     req_body = request.get_json() 
     email, password = req_body['email'], req_body['password']
     user = mongo.db.reg_users.find_one({'email': email})
@@ -92,7 +80,7 @@ def logout(my_email):
     resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
     return resp, 400    
 
-#@app.app.route('/register', methods=['POST'])
+
 def register():
     ''' register user endpoint '''
 
@@ -137,13 +125,7 @@ def authenticate():
     return resp, 400      
     
 
-    # if logged_in_user:
-    #     return "Successfully authenticated user", 200
-    # return "failed to authenticate user", 400
-    
 if __name__ == '__main__':
-    #LOG.info('running environment: %s', os.environ.get('ENV'))
+
     app.run(os.environ.get('PORT'))
-    #app.run(os.environ.get('PORT'))
-    #app.app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
-#app.app.run(host='0.0.0.0', port=int(PORT)) # Run the app
+

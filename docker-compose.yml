@@ -51,7 +51,6 @@ services:
   environment:
    - ENV=development
    - PORT=4030
-   # - DB=mongodb://mongodb_storage_service1:27019/storage1
    - ZK=localhost:2181
 
  storage_service2:
@@ -63,7 +62,6 @@ services:
   environment:
    - ENV=development
    - PORT=4031
-   # - DB=mongodb://mongodb_storage_service1:27019/storage1
    - ZK=localhost:2181
 
  mongodb_app_logic:
@@ -85,6 +83,15 @@ services:
   volumes:
    - ./data/auth_db:/usr/data/db
   command: mongod --smallfiles --port 27018 --logpath=/dev/null # --quiet
+
+ zk:
+  build: zk_service
+  image: zookeeper:latest
+  restart: always
+  hostname: zk
+  ports:
+    - 2181:2181
+
 
 # networks:
 #  # default:

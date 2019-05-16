@@ -13,15 +13,18 @@ import time
 
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
-# Debug
-# my_client = kz_client.KazooClient('ZK')
+
+
+
+my_client = kz_client.KazooClient('ZK')
  
-# def my_listener(state):
-#     if state == kz_client.KazooState.CONNECTED:
-#         print("Client connected !")
+def my_listener(state):
+    if state == kz_client.KazooState.CONNECTED:
+        print("Zk Client connected !")
  
-# my_client.add_listener(my_listener)
-# # my_client.start(timeout=5)
+my_client.add_listener(my_listener)
+my_client.start(timeout=30)
+
 
 this = sys.modules[__name__]
 start_time = time.time()
@@ -86,13 +89,7 @@ def remove_image(img_id):
         return "Failed. File does not exist", 401 
 
 if __name__ == '__main__':
-    #LOG.info('running environment: %s', os.environ.get('ENV'))
-    # app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
     app.app.run(host='0.0.0.0', port=int(PORT)) # Run the app
     
 
-# if __name__ == '__main__':
-#     #LOG.info('running environment: %s', os.environ.get('ENV'))
-#     # app.config['DEBUG'] = os.environ.get('ENV') == 'development' # Debug mode if development env
-#     app.run(os.environ.get('PORT'))
-#     flash('No file part')
+

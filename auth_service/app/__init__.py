@@ -23,28 +23,20 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
-
-
-# # create the flask object
-# app = Flask(__name__)
-
 app = connexion.App(__name__)
 app.add_api('openapi.yaml')
 cors = CORS(app.app)
 
 
-# add mongo url to flask config, so that flask_pymongo can use it to make connection
+
 
 
 # use the modified encoder class to handle ObjectId & datetime object while jsonifying the response.
 app.app.json_encoder = JSONEncoder
 
-# Docker
-# app.app.config['JWT_SECRET_KEY'] = os.environ.get('SECRET')
-# app.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
 # Debug
 app.app.config['JWT_SECRET_KEY'] = "ironman"
 app.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
 
-#from app.controllers import *
+

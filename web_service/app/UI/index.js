@@ -461,7 +461,7 @@ $(document).ready(function(){
 		            //console.log("Bad request");
 		        }
 		});
-
+/*
 		comments = [
 			{
 				id: "1",
@@ -493,7 +493,7 @@ $(document).ready(function(){
 				comment: "iuqeords.mn",
 				email: "okojoi@nm.com"
 			}
-		];
+		];*/
 
 	}
 	
@@ -711,7 +711,7 @@ $(document).ready(function(){
 			//$.when(get_comments(target.email, target.glr_name, image.name)).done(function(a){
 			get_gallery_comments.then(values=>{
 				images.forEach(function(image,i){
-					console.log("for loop images");
+
 					glr_images_html += make_image_html(target.email, image, target.glr_name,i);
 				})
 				//console.log("In .then ");
@@ -795,7 +795,7 @@ $(document).ready(function(){
 			});			
 		}else{
 			//console.log("No gallery");
-			galleries_html +="<div><h2>No gallery found, make sure to add some new galleries !!!</h2></div>";
+			galleries_html +="<div><h2>No galleries found, make sure to add some new galleries !!!</h2></div>";
 		
 		}
 
