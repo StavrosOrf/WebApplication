@@ -30,26 +30,68 @@ SS1_URI = os.environ.get('SS1_URI')
 SS2_URI = os.environ.get('SS2_URI')
 app.app.config['MONGO_URI'] = os.environ.get('DB')
 
+
+
 # SS1_URI = "http://storage_service1:4030"
 # SS2_URI = "http://storage_service2:4031"  
 mongo = PyMongo(app.app)
 
-my_client = kz_client.KazooClient('ZK')
- 
+NODE_PATH = "/app_logic"
+kz = kz_client.KazooClient('ZK')
+
+def get_SS_zk():
+
+    SS_children = kz.get_children("/storage")
+    print(SS_children)
+    SS_values =[kz.get("/storage/"+child)[0] for child in SS_children]
+    print(SS_values)
+    return SS_values
+
+
 def my_listener(state):
-    if state == kz_client.KazooState.CONNECTED:
-        print("Zk Client connected !")
+    if state == kz_client.KazooState.LOST:
+        # Register somewhere that the session was lost
+        print("State: LOST!")
+    elif state == kz_client.KazooState.SUSPENDED:
+        # Handle being disconnected from Zookeeper
+        print("State: SUSPENDED!")
+    else:
+        print("State: CONNECTED!")
+
+        print("END OF ELSE!")
+      
+def make_zk_node():
+    try:
+        print("In making parent_node")
+        kz.ensure_path('/')
+        parent_node = kz.create(NODE_PATH, b"root")
+        print(parent_node)
+        print("Try making parent_node: Success!")
+    except Exception as e:
+        print("Try making parent_node: Exception!")
+    
+    try:
+        print("In making child_node")
+        kz.ensure_path(NODE_PATH)
+        app_logic_node = kz.create(NODE_PATH+"/"+PORT, ephemeral=True, value=b"a value")
+        print(app_logic_node)
+        print("Try making child_node: Success!")
+    except Exception as e:
+         print("Try making child_node: Exception!")
+
 logging.basicConfig()
 
-my_client.add_listener(my_listener)
-my_client.start(timeout=30)
+kz.add_listener(my_listener)
+kz.start(timeout=60)
+
+make_zk_node()
 
 
 def authenticate(token):
-    # print("auth_entry")
+    print("auth_entry")
     URL = "http://auth_service:4020/api/authenticate"
     head = {'Authorization': 'Bearer {}'.format(token)}
-    r = requests.get(URL, headers=head) 
+    r = requests.get(URL, headers=head)
     # print(r)
     if r.status_code == 200 :
         return True
@@ -272,14 +314,24 @@ def get_all_images():
     images = []
     # ss_uri = "1"
     if user:
+
+        SS_children = get_SS_zk()
+
         for image in user['galleries'][0]['Images']:
-            if random.randint(1,2) == 1:
+            if image['ss1_uri'] not in SS_children and image['ss2_uri'] not in SS_children: 
+                resp = jsonify({'message': "Failure"})
+                resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+                return resp, 400
+                
+            if image['ss1_uri'] in SS_children and image['ss2_uri'] in SS_children:
+                ss_uri = image['ss1_uri'] if (random.randint(1,2) == 1) else image['ss2_uri']
+            elif image['ss1_uri'] in SS_children:
                 ss_uri = image['ss1_uri']
-            else:
+            elif image['ss2_uri'] in SS_children:
                 ss_uri = image['ss2_uri']
 
-            ss_uri =  str(ss_uri).replace("storage_service1","localhost")
-            ss_uri =  str(ss_uri).replace("storage_service2","localhost") 
+            ss_uri = "http://localhost:"+str(ss_uri.split(":")[2])
+
             images.append({
                             'link': str(ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg",
                             'name':str(image['img_name'])
@@ -305,15 +357,27 @@ def get_image(email,glr_name,img_name):
     user = mongo.db.users.find_one({'email': email},{'galleries':{'$elemMatch': {"glr_name":glr_name}}})
     # print(user)
     if user:
+
+        SS_children = get_SS_zk()
+
         for image in user['galleries'][0]['Images']:
             
             if image['img_name'] == img_name:
-                if random.randint(1,2) == 1:
+                                
+                if image['ss1_uri'] not in SS_children and image['ss2_uri'] not in SS_children: 
+                    resp = jsonify({'message': "Failure"})
+                    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+                    return resp, 400
+                
+                if image['ss1_uri'] in SS_children and image['ss2_uri'] in SS_children:
+                    ss_uri = image['ss1_uri'] if (random.randint(1,2) == 1) else image['ss2_uri']
+                elif image['ss1_uri'] in SS_children:
                     ss_uri = image['ss1_uri']
-                else:
+                elif image['ss2_uri'] in SS_children:
                     ss_uri = image['ss2_uri']
-                ss_uri =  ss_uri.replace("storage_service1","localhost")
-                ss_uri =  ss_uri.replace("storage_service2","localhost")    
+
+                ss_uri = "http://localhost:"+str(ss_uri.split(":")[2])
+
 
                 resp = jsonify((ss_uri)+"/api/image?img_id="+email+"."+image["access_token"]+".jpeg")
                 resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
@@ -344,7 +408,33 @@ def add_image():
             resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
             return resp, 400
 
-        ss_uri = [SS1_URI,SS2_URI] #get 2 random SService URI
+
+        children = kz.get_children("/storage")
+        ch_len = len(children)
+        child = [None,None]
+
+        _SS1 = ""
+        _SS2 = ""
+
+        if ch_len >1:
+            child[0] = children.pop(random.randint(0, ch_len-1))
+            child[1] = children.pop(random.randint(0, ch_len-2))
+
+            _SS1 = kz.get("/storage/"+child[0])[0]
+            _SS2 = kz.get("/storage/"+child[1])[0]
+        elif ch_len == 1: 
+            child[0] = children[0]
+            _SS1 = kz.get("/storage/"+child[0])[0]
+        else:
+            print("No children!")
+            resp = jsonify({'message': "Failure"})
+            resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+            return resp, 400    
+
+
+        ss_uri = [_SS1,_SS2] #get 2 random SService URI
+        print(ss_uri)
+
         access_token = id_generator();
 
         img1 = img.stream.read()
@@ -352,19 +442,20 @@ def add_image():
         files = [0,0]
         img.filename = my_email+"."+access_token
 
-        for i in reversed(range(2)): 
-            URL = ss_uri[i] + "/api/image"
-            files[i] = {'img': (my_email+"."+access_token+".jpeg",img1,'multipart/form-data',{'Expires': '0'})}
+        j = [0,1]
+        if child[1] is None:
+            j =[0]
 
+        for i in j: 
+            URL = str(ss_uri[i]) + "/api/image"
+            print(URL)
+            files[i] = {'img': (my_email+"."+access_token+".jpeg",img1,'multipart/form-data',{'Expires': '0'})}
+            
             r = requests.post(URL,files = files[i]) 
-            # print(img)
             if not r.ok:
-                # print(r)
                 resp = jsonify({'message': "Failure"})
                 resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
                 return resp, 400
-
-
 
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$push': 
         { 'galleries.$.Images': { "img_name":img_name,"ss1_uri":ss_uri[0],"ss2_uri":ss_uri[1],"access_token":access_token,"Comments":[] } } })
@@ -395,6 +486,7 @@ def remove_image(my_email,glr_name,img_name):
                 access_token = image['access_token']
                 uri[0] = image['ss1_uri']
                 uri[1] = image['ss2_uri']
+                print(uri)
 
         if access_token == "":
             resp = jsonify({'message': "Failure"})
@@ -403,12 +495,16 @@ def remove_image(my_email,glr_name,img_name):
         
         for i in range(2): 
             URL = str(uri[i])+"/api/image?img_id=" + str(my_email)+"."+str(access_token)+".jpeg"
-            r = requests.delete(URL) 
-            if not r.ok:
-                # print(r)
-                resp = jsonify({'message': "Failure"})
-                resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
-                return resp, 400
+            try:
+                r = requests.delete(URL) 
+                if not r.ok:
+                    # print(r)
+                    resp = jsonify({'message': "Failure"})
+                    resp.headers['Access-Control-Allow-Origin'] = 'http://localhost:4000'
+                    return resp, 400
+            except Exception as e:
+                pass
+
 
         mongo.db.users.update( { 'email': my_email,'galleries.glr_name':glr_name }, { '$pull': { 'galleries.$.Images': { "img_name":img_name }}})
         resp = jsonify({'message': "Succesfully deleted Image"})

@@ -3,6 +3,7 @@ import sys
 import requests
 from flask import jsonify, request, make_response, send_from_directory,send_file
 from kazoo import client as kz_client
+import logging
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -11,14 +12,46 @@ from app import app
 
 PORT = os.environ.get('PORT')
 
-my_client = kz_client.KazooClient('ZK')
+NODE_PATH = "/web"
+kz = kz_client.KazooClient('ZK')
  
 def my_listener(state):
-    if state == kz_client.KazooState.CONNECTED:
-        print("Zk Client connected !")
- 
-my_client.add_listener(my_listener)
-my_client.start(timeout=30)
+    if state == kz_client.KazooState.LOST:
+        # Register somewhere that the session was lost
+        print("State: LOST!")
+    elif state == kz_client.KazooState.SUSPENDED:
+        # Handle being disconnected from Zookeeper
+        print("State: SUSPENDED!")
+    else:
+        print("State: CONNECTED!")
+
+        print("END OF ELSE!")
+      
+def make_zk_node():
+    try:
+        print("In making parent_node")
+        kz.ensure_path('/')
+        parent_node = kz.create(NODE_PATH, b"root")
+        print(parent_node)
+        print("Try making parent_node: Success!")
+    except Exception as e:
+        print("Try making parent_node: Exception!")
+    
+    try:
+        print("In making child_node")
+        kz.ensure_path(NODE_PATH)
+        app_logic_node = kz.create(NODE_PATH+"/"+PORT, ephemeral=True, value=b"a value")
+        print(app_logic_node)
+        print("Try making child_node: Success!")
+    except Exception as e:
+         print("Try making child_node: Exception!")
+
+logging.basicConfig()
+
+kz.add_listener(my_listener)
+kz.start(timeout=60)
+
+make_zk_node()
 
 @app.errorhandler(404)
 def not_found(error):

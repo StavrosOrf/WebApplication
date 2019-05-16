@@ -8,6 +8,8 @@ services:
    - "4000:4000"
   volumes:
    - ./web_service:/app
+  depends_on:
+   - "zk"
   environment:
    - ENV=development
    - PORT=4000
@@ -19,6 +21,8 @@ services:
    - "4010:4010"
   volumes:
    - ./app_logic_service:/app
+  depends_on:
+   - "zk"
   environment:
    - ENV=development
    - PORT=4010
@@ -35,6 +39,8 @@ services:
    - "4020:4020"
   volumes:
    - ./auth_service:/app
+  depends_on:
+   - "zk"
   environment:
    - ENV=development
    - PORT=4020
@@ -48,10 +54,13 @@ services:
    - "4030:4030"
   volumes:
    - ./storage_service:/app
+  depends_on:
+   - "zk"
   environment:
    - ENV=development
    - PORT=4030
    - ZK=localhost:2181
+   - URI=http://storage_service1:4030
 
  storage_service2:
   build: storage_service/
@@ -59,10 +68,27 @@ services:
    - "4031:4031"
   volumes:
    - ./storage_service:/app
+  depends_on:
+   - "zk"
   environment:
    - ENV=development
    - PORT=4031
    - ZK=localhost:2181
+   - URI=http://storage_service2:4031
+
+ storage_service3:
+  build: storage_service/
+  ports:
+   - "4032:4032"
+  volumes:
+   - ./storage_service:/app
+  depends_on:
+   - "zk"
+  environment:
+   - ENV=development
+   - PORT=4032
+   - ZK=localhost:2181
+   - URI=http://storage_service3:4032
 
  mongodb_app_logic:
   image: mongo:latest

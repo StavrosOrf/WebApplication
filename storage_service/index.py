@@ -10,21 +10,11 @@ os.environ.update({'ROOT_PATH': ROOT_PATH})
 sys.path.append(os.path.join(ROOT_PATH, 'modules'))
 from app import app
 import time
+import logging
 
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
-
-
-
-my_client = kz_client.KazooClient('ZK')
- 
-def my_listener(state):
-    if state == kz_client.KazooState.CONNECTED:
-        print("Zk Client connected !")
- 
-my_client.add_listener(my_listener)
-my_client.start(timeout=30)
-
+URI = os.environ.get('URI')
 
 this = sys.modules[__name__]
 start_time = time.time()
@@ -36,6 +26,49 @@ this.TOTAL_DELETES = 0
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 img_dir = os.path.join(APP_ROOT, "images/")
 
+
+NODE_PATH = "/storage"
+kz = kz_client.KazooClient('ZK')
+ 
+def my_listener(state):
+    if state == kz_client.KazooState.LOST:
+        # Register somewhere that the session was lost
+        print("State: LOST!")
+    elif state == kz_client.KazooState.SUSPENDED:
+        # Handle being disconnected from Zookeeper
+        print("State: SUSPENDED!")
+    else:
+        print("State: CONNECTED!")
+
+        print("END OF ELSE!")
+      
+def make_zk_node():
+    # Create parent nodes
+    try:
+        print("In making parent_node")
+        kz.ensure_path('/')
+        parent_node = kz.create(NODE_PATH, b"root")
+        print(parent_node)
+        print("Try making parent_node: Success!")
+    except Exception as e:
+        print("Try making parent_node: Exception!")
+    
+    # Create child nodes (ephemeral)
+    try:
+        print("In making child_node")
+        kz.ensure_path(NODE_PATH)
+        app_logic_node = kz.create(NODE_PATH+"/"+PORT,ephemeral=True, value=URI)
+        print(app_logic_node)
+        print("Try making child_node: Success!")
+    except Exception as e:
+         print("Try making child_node: Exception!")
+
+logging.basicConfig()
+
+kz.add_listener(my_listener)
+kz.start(timeout=60)
+
+make_zk_node()
 
 
 def print_statistics():
@@ -86,7 +119,7 @@ def remove_image(img_id):
         print_statistics()
         return "SUCCESS", 200
     else:
-        return "Failed. File does not exist", 401 
+        return "Failed. File does not exist", 400
 
 if __name__ == '__main__':
     app.app.run(host='0.0.0.0', port=int(PORT)) # Run the app

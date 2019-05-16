@@ -12,6 +12,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token,
 from app import app
 from flask_jwt_extended import JWTManager
 from flask_bcrypt import Bcrypt
+import logging
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 os.environ.update({'ROOT_PATH': ROOT_PATH})
@@ -24,20 +25,52 @@ from jwt import(encode,decode)
 # Port variable to run the server on.
 PORT = os.environ.get('PORT')
 
-my_client = kz_client.KazooClient('ZK')
- 
-def my_listener(state):
-    if state == kz_client.KazooState.CONNECTED:
-        print("ZK Client connected !")
- 
-my_client.add_listener(my_listener)
-my_client.start(timeout=40)
-
 flask_bcrypt = Bcrypt(app.app)
 jwt = JWTManager(app.app) 
 # Docker
 app.app.config['MONGO_URI'] = os.environ.get('DB')
 mongo = PyMongo(app.app)
+
+NODE_PATH = "/auth"
+kz = kz_client.KazooClient('ZK')
+ 
+def my_listener(state):
+    if state == kz_client.KazooState.LOST:
+        # Register somewhere that the session was lost
+        print("State: LOST!")
+    elif state == kz_client.KazooState.SUSPENDED:
+        # Handle being disconnected from Zookeeper
+        print("State: SUSPENDED!")
+    else:
+        print("State: CONNECTED!")
+
+        print("END OF ELSE!")
+      
+def make_zk_node():
+    try:
+        print("In making parent_node")
+        kz.ensure_path('/')
+        parent_node = kz.create(NODE_PATH, b"root")
+        print(parent_node)
+        print("Try making parent_node: Success!")
+    except Exception as e:
+        print("Try making parent_node: Exception!")
+    
+    try:
+        print("In making child_node")
+        kz.ensure_path(NODE_PATH)
+        app_logic_node = kz.create(NODE_PATH+"/"+PORT, ephemeral=True, value=b"a value")
+        print(app_logic_node)
+        print("Try making child_node: Success!")
+    except Exception as e:
+         print("Try making child_node: Exception!")
+
+logging.basicConfig()
+
+kz.add_listener(my_listener)
+kz.start(timeout=60)
+
+make_zk_node()
 
 
 def decode_token(token):
